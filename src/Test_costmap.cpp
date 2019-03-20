@@ -5,8 +5,8 @@
 #include "../include/GUI.hpp"
 
 #include "ros/ros.h"
-#include "geometry_msgs/PoseArray.h" 
 #include "geometry_msgs/Pose.h" 
+#include "geometry_msgs/PoseArray.h" 
 #include "geometry_msgs/PoseStamped.h" 
 #include "geometry_msgs/TransformStamped.h" 
 
@@ -20,8 +20,7 @@
 
 #include "nav_msgs/Path.h"
 #include "nav_msgs/Odometry.h"
-
-#include <hybrid_astar/polygonArray.h>
+#include "nav_msgs/OccupancyGrid.h"
 
 using namespace cv;
 
@@ -33,48 +32,41 @@ typedef struct _Quaternion
     float w;
 }Quaternion;
 
-bool DEBUG = false;
 
 State start, dest;
 tf2_ros::Buffer tfBuffer;
 
-vector< vector<Point> > obs;
+nav_msgs::OccupancyGrid obs_grid;
+pair< vector< vector< bool > >, double > obs_map;
 
 bool map_ch = false;
 bool dest_ch = false;
 bool start_ch = false;
 
-void mapCallback(const hybrid_astar::polygonArray& msg)
+void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
 {
-    cout<<"Inside mapCallback"<<endl;    
+    // cout<<"Inside mapCallback"<<endl;
     map_ch = true;
+    obs_grid=*msg;
     
-    // The map is received in form of polygon points from lidar data. These points are in
-    // base_link frame and have to be converter to hybrid_astar frame.
-    geometry_msgs::TransformStamped trans_msg;
-    try{
-        trans_msg = tfBuffer.lookupTransform("hybrid_astar", "center_laser_link",ros::Time(0));
-    }catch (tf2::TransformException &ex){
-        ROS_WARN("%s",ex.what());
-    }
+    obs_map.first.clear();
+    // Convention of data in OccupancyGrid - height:= cols and width:= rows
+    obs_map.first.resize(obs_grid.info.width,vector<bool>(obs_grid.info.height));
     
-    // Creating vector of vector of Obstacles from hull points of lidar data.
-    obs.resize(msg.obstacles.size());
-    for (int i = 0; i < msg.obstacles.size(); ++i)
-        for(int j = 0; j < msg.obstacles[i].polygon.size(); j++)
-        {
-            geometry_msgs::PointStamped trans,temp;
-            temp = msg.obstacles[i].polygon[j];
-            tf2::doTransform(temp,trans,trans_msg);
-            obs[i].push_back(Point {trans.point.x,trans.point.y});
-        }
+    for(int i=0; i<obs_grid.info.width; i++) 
+        for(int j=0; j < obs_grid.info.height; j++)
+            obs_map.first[i][j] = (obs_grid.data[j*obs_grid.info.height+i]>= 90 || obs_grid.data[j*obs_grid.info.height+i]==-1); 
+
+    obs_map.second = obs_grid.info.resolution;
+
+    // cout<<"Map "<<obs_grid.info.width<<" "<<obs_grid.info.height<<endl;
 
 }
 
 // Used to locate the current position of vehicle
 void odomCallback(const nav_msgs::Odometry& odom_msg) 
 {
-    cout<<"Inside OdomCallback"<<endl;
+    // cout<<"Inside OdomCallback"<<endl;
     start_ch = true;
 
     geometry_msgs::PoseStamped begin;
@@ -108,7 +100,7 @@ void odomCallback(const nav_msgs::Odometry& odom_msg)
 // Used to accept the goal position of vehicle
 void goalCallback(const geometry_msgs::PoseStamped&  goal)
 {
-    cout<<"Inside goalCallback"<<endl;
+    // cout<<"Inside goalCallback"<<endl;
     dest_ch = true;
     
     geometry_msgs::PoseStamped  trans_goal;
@@ -156,14 +148,15 @@ Quaternion toQuaternion(double M_PItch, double roll, double yaw)
 
 int main(int argc,char **argv)
 { 
+    bool DEBUG = true;
     
-    int rows = 100, cols = 100;
-    float scale = 6;
+    int rows = 200, cols = 200;
+    float scale = 4;
     
     ros::init(argc,argv,"hybrid_astar");
     ros::NodeHandle nh;
     
-    ros::Subscriber map  = nh.subscribe("/obstacles",10,&mapCallback);   
+    ros::Subscriber map  = nh.subscribe("/costmap_node/costmap/costmap",10,&mapCallback);   
     ros::Subscriber odom  = nh.subscribe("/base_pose_ground_truth",10,&odomCallback);
     ros::Subscriber goal  = nh.subscribe("/move_base_simple/goal",10,&goalCallback);
 
@@ -172,9 +165,8 @@ int main(int argc,char **argv)
 
     ros::Rate rate(1);
 
-    Planner astar( rows, cols);
+    Planner astar;
     Vehicle car;
-    GUI display(rows,cols,scale);
     
     while(ros::ok())
     {
@@ -182,7 +174,6 @@ int main(int argc,char **argv)
         nav_msgs::Path path_pub; 
         path_pub.header.frame_id = "/map";
 
-        start_ch = false;
         while( !start_ch )
         {
             cout<<"Waiting for Start "<<endl;
@@ -190,7 +181,6 @@ int main(int argc,char **argv)
         }
         cout<<"Starting Received : "<<start.x<<" "<<start.y<<" "<<start.theta<<endl;
 
-        dest_ch = false;
         while(!dest_ch)
         {
             cout<<"Waiting for Goal "<<endl;
@@ -198,15 +188,18 @@ int main(int argc,char **argv)
         }
         cout<<"Destination Received : "<<dest.x<<" "<<dest.y<<" "<<dest.theta<<endl;
 
-        map_ch = false;
         while( !map_ch )
         {
             cout<<"Waiting for Map "<<endl;
             ros::spinOnce();
         }
 
+        rows = obs_map.first.size();
+        cols = obs_map.first[0].size();
+        GUI display(rows,cols,scale);
+
         clock_t start_time=clock();
-        vector<State> path = astar.plan(start, dest, car, obs, display);
+        vector<State> path = astar.plan(start, dest, car, obs_map, display, rows, cols);
         clock_t end_time=clock();
 
         geometry_msgs::PoseStamped  trans_pose;
@@ -244,23 +237,11 @@ int main(int argc,char **argv)
         cout<<"Total time taken: "<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;
         cout<<"Got path of length "<<path.size()<<endl<<endl;
         astar.path.clear();
-        
-        if(DEBUG)
-        {
-            GUI dis(rows, cols, scale);
-            dis.draw_obstacles(obs);
-            dis.draw_car(start,car);
-            for(int i=0;i<=path.size();i++)
-            {
-                dis.draw_car(path[i], car);
-                dis.show(1);
-            } 
-            dis.show(200);
-        }
        
         path_pub.header.stamp = ros::Time::now();
         pub.publish(path_pub);
         rate.sleep();
+        exit(0);
 
     }
 

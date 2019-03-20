@@ -16,7 +16,6 @@ double t=0;
 Vehicle veh;
 State target;
 
-
 // We are calculating the values of Dubins Cost in two seperate threads:
 bool PriQ::operator()(State a,State b)
 {
@@ -45,10 +44,10 @@ bool PriQ::operator()(State a,State b)
 
 }
 
-vector<State> Planner::plan(State start, State end, Vehicle car, vector<vector<Point> > obs, GUI display)
+vector<State> Planner::plan(State start, State end, Vehicle car, pair< vector<vector<bool> >, double > obs, GUI display, int rows, int cols)
 {
 
-	bool DEBUG = false;
+	bool DEBUG = true;
 	Map map(obs, end, rows, cols);                         
 
 	// This is done for functioning of Planner::Operator().
@@ -58,10 +57,10 @@ vector<State> Planner::plan(State start, State end, Vehicle car, vector<vector<P
 	// DEBUG true will cause image of start pose, end pose and obstacles to display. 
 	if(DEBUG)
 	{
-	    display.draw_obstacles(obs);
+	    display.draw_obstacles(map.obs);
 	    display.draw_car(start, car);
 	    display.draw_car(end, car);
-	    display.show(10);
+	    display.show(0);
 	}   
 
 	// Array of states allocation
@@ -167,7 +166,20 @@ vector<State> Planner::plan(State start, State end, Vehicle car, vector<vector<P
 				path.push_back(temp);
 				temp =*(temp.parent);
 			}
-			reverse(path.begin(), path.end());			
+			reverse(path.begin(), path.end());	
+
+			if(DEBUG)
+	        {
+	            GUI dis(rows, cols, display.scale);
+	            dis.draw_obstacles(map.obs);
+	            dis.draw_car(start,car);
+	            for(int i=0;i<=path.size();i++)
+	            {
+	                dis.draw_car(path[i], car);
+	                dis.show(5);
+	            } 
+	            dis.show(0);
+	        }		
 			return path;
 		}
 		// else 
@@ -244,6 +256,20 @@ vector<State> Planner::plan(State start, State end, Vehicle car, vector<vector<P
 						temp= *(temp.parent);
 					}
 					reverse(path.begin(), path.end());
+
+			        if(DEBUG)
+			        {
+			            GUI dis(rows, cols, display.scale);
+			            dis.draw_obstacles(map.obs);
+			            dis.draw_car(start,car);
+			            for(int i=0;i<=path.size();i++)
+			            {
+			                dis.draw_car(path[i], car);
+			                dis.show(5);
+			            } 
+			            dis.show(0);
+			        }
+					
 					return path;
 				
 				}
@@ -308,7 +334,6 @@ vector<State> Planner::plan(State start, State end, Vehicle car, vector<vector<P
 		count++;
 	}
 	cout<<"Goal cannot be reached"<<endl;
-	exit(0);
 }
 
 

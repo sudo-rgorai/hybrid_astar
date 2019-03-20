@@ -45,15 +45,9 @@ CATKIN_DEPENDS message_runtime
 include_directories(include ${OMPL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 ## Creating executable for Hybrid Astar Planner:
-add_executable(hybrid_astar src/Test_Benchmarking.cpp )
+add_executable(hybrid_astar src/Test_costmap.cpp )
 target_link_libraries(hybrid_astar ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(hybrid_astar ${catkin_EXPORTED_TARGETS})
-
-## Creating executable for Hybrid Astar Planner:
-add_executable(Test src/Test_check.cpp )
-target_link_libraries(Test ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(Test ${catkin_EXPORTED_TARGETS})
-
 
 ## Creating executable for Velocity Publisher:
 add_executable(velocity_publisher publisher/velocity_publisher.cpp )

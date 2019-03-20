@@ -6,36 +6,82 @@
 #include "../include/Map.hpp"
 using namespace cv;
 
-Map::Map( vector< vector<Point> > obs, State end, int rows, int cols)
+Map::Map( pair< vector< vector<bool> >, double > obsData, State end, int rows, int cols)
 {
-   	RES = 2;
+   	RES = 1/obsData.second;
+    
     VISX = rows;
    	VISY = cols;
 	MAP_THETA=72;
 	this->end = end;
-	this->obs = obs;
-
-	// Converting the Obstacle Map in form of Polygon Array to Costmap 
-	// so that point based collision detection can work.
 	
-	// Create a map with resolution 0.5m x 0.5m
-	vector< vector<Point> > obs_copy;
-	obs_map = Mat::zeros(Size(RES*VISX, RES*VISY), CV_8UC1);
-	for(int i=0;i < obs.size();i++)
-	{
-		vector< Point > temp;
-		for(int j=0;j < obs[i].size(); j++ )
+	obs_map = obsData.first;
+	obs_img = Mat::zeros(rows, cols, CV_8UC1 );
+    for(int i=0;i<obs_img.rows;i++)
+        for(int j=0;j<obs_img.cols;j++)
+            if(obs_map[i][j])
+                obs_img.at<uchar>(i,j) = 255;
 
-			temp.push_back( Point {RES*obs[i][j].x, RES*obs[i][j].y});
-		obs_copy.push_back(temp);
-	}
-	drawContours(obs_map, obs_copy, -1, Scalar(255), -1);
-	transpose(obs_map, obs_map);
+    // Canny Edge Detection
+    int threshold=100;
+    Canny(obs_img,obs_img,threshold,3*threshold,3);
+
+    // Contour Detection
+    vector< vector<Point> > temp_obs, obs_copy;
+    findContours(obs_img, temp_obs, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    obs_copy.resize(temp_obs.size());
+  
+/*
+    For printing the output of Contour Detection
+*/    
+
+    // vector<Vec4i> hierarchy;
+    // Mat drawing = Mat::zeros( A.size(), CV_8UC3 );
+    // for( int i = 0; i< temp_obs.size(); i++ )
+    // {
+    //    Scalar color = Scalar( 0,255,255);
+    //    drawContours( drawing, temp_obs, i, color, 2, 8, hierarchy, 0, Point() );
+    // }
+
+    // imshow("Contours ",drawing);
+    // waitKey(0);
+
+    for(int i=0;i<temp_obs.size();i++)
+        convexHull(temp_obs[i],obs_copy[i]);
+
+/*
+    For printing the output of Convex Hull
+*/    
+    // drawing = Mat::zeros( A.size(), CV_8UC3 );
+    // for( int i = 0; i< temp_obs.size(); i++ )
+    // {
+    //     Scalar color = Scalar( 0, 0, 255 );
+    //     drawContours( drawing, obs_copy, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
+    // }
+    // imshow("ConvexHull",drawing);
+    // waitKey(0);
+
+/*
+    The points extracted by convex hull are in inverted coordinate frames so correcting it.
+*/
+    obs.resize(obs_copy.size());
+    cout<<"Number of obstacles: "<<obs_copy.size()<<endl;
+    for (int i = 0; i < obs_copy.size(); ++i)
+    {
+        cout<<"Number of vertices in obstacles: "<<obs_copy[i].size()<<endl;
+        obs[i].resize(obs_copy[i].size());
+        for (int j = 0; j < obs_copy[i].size(); ++j)
+        {
+            obs[i][j].x=obs_copy[i][j].y;
+            obs[i][j].y=obs_copy[i][j].x;
+        }
+    }
 
 	initCollisionChecker();
 	initCollisionCheckerSat();
 
 }
+
 
 double cmod(double a, double b)
 {
@@ -74,7 +120,7 @@ void Map::initCollisionChecker(){
 	{
 		acc_obs_map[i]=new int[RES*VISY];
 		for(int j=0;j<RES*VISY;j++)
-			acc_obs_map[i][j]=(obs_map.at<uchar>(i,j)==255);
+			acc_obs_map[i][j]=(obs_img.at<uchar>(i,j)==255);
 	}
 
 	for(int i=0;i<RES*VISX;i++)
@@ -119,7 +165,7 @@ bool Map::checkCollision(State pos){
 			int s = RES*pos.x+i*cos(pos.theta)+j*sin(pos.theta) + 0.001;
 			int t = RES*pos.y+i*sin(pos.theta)+j*cos(pos.theta) + 0.001;
 
-     		if( obs_map.at<uchar>(s,t)!=0 )
+     		if( obs_img.at<uchar>(s,t)!=0 )
 				return true;
 		}
 	return false;

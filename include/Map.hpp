@@ -22,13 +22,14 @@ class Map
         vector<border> bPoints; 
         vector< vector<Point> > obs;
 
-        Mat obs_map;
+        Mat obs_img;
         int** acc_obs_map;
-        
-        int MAP_THETA;
+        vector< vector< bool > > obs_map;
+
+        int RES;
         int VISX;
         int VISY;
-        int RES;
+        int MAP_THETA;
 
         Vehicle car;
 
@@ -37,7 +38,7 @@ class Map
             
         }
 
-        Map(vector< vector<Point> > polygon, State , int, int);
+        Map(pair< vector<vector<bool> >, double > , State , int, int);
 
         bool isReached(State curr);
         bool isValid(Point);
