@@ -15,10 +15,12 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
+using namespace std;
+
 State curr, goal;
 bool dest_ch = false;
+int distThreshold = 5;
 tf2_ros::Buffer tfBuffer;
-using namespace std;
 
 // Used to locate the current position of vehicle
 void odomCallback(const nav_msgs::Odometry& odom_msg) 
@@ -90,7 +92,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         geometry_msgs::Twist vel;
-        if( abs(goal.x-curr.x) < 1 && abs(goal.y-curr.y) < 1 )
+        if( sqrt((curr.x-goal.x)*(curr.x-goal.x) + (curr.y-goal.y)*(curr.y-goal.y))< distThreshold)
             vel.linear.x = 0;
         else 
             vel.linear.x = 2;
