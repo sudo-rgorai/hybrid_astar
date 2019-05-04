@@ -1,11 +1,12 @@
 <launch>
+  <node pkg="hybrid_astar" type="test_ros" name="hybrid_astar_node" clear_params="true">
 
-    <node pkg="hybrid_astar" name="hybrid_astar" type="hybrid_astar"/>
-    <node pkg="hybrid_astar" name="hybrid_astar" type="conv"/>
 
-  <node pkg="turtlesim" name="mimic" type="mimic">
-    <remap from="input" to="turtlesim1/turtle1"/>
-    <remap from="output" to="turtlesim2/turtle1"/>
+      <!-- Placeholders for input remapping. Set your topic names as the "to" values 
+      <remap from="/base_pose_ground_truth" to="odometry wala topic"/>
+      <remap from="/move_base_simple/goal" to="goal wala topic"/>
+      <remap from="/costmap_node/costmap/costmap" to="costmap wala topic"/>
+      -->
+
   </node>
-
 </launch>

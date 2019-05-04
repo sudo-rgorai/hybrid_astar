@@ -445,7 +445,7 @@ void plan_repeatedly(ros::NodeHandle nh)
 
 int main(int argc,char **argv)
 { 
-    ros::init(argc,argv,"hybrid_astar");
+    ros::init(argc,argv,"hybrid_astar_node");
     ros::NodeHandle nh;
 
     plan_repeatedly(nh);
