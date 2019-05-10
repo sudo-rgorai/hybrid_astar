@@ -24,17 +24,6 @@ find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS program_options)
 
 
-add_message_files(
-   FILES
-   polygon.msg
-   polygonArray.msg
- )
-
-generate_messages(
-   DEPENDENCIES
-   geometry_msgs
-   std_msgs
- )
 
 ## Declare a catkin package
 catkin_package(
