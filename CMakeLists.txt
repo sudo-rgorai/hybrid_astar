@@ -44,20 +44,10 @@ CATKIN_DEPENDS message_runtime
 ## Linking 
 include_directories(include ${OMPL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
-## Creating executable for test:
-add_executable(test_simple src/test.cpp src/Planner.cpp src/GUI.cpp src/Heuristic.cpp src/Map.cpp src/Vehicle.cpp)
-target_link_libraries(test_simple ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(test_simple ${catkin_EXPORTED_TARGETS})
-
-## Creating executable for benchmarks:
-add_executable(test_benchmark src/test_benchmark.cpp src/Planner.cpp src/GUI.cpp src/Heuristic.cpp src/Map.cpp src/Vehicle.cpp)
-target_link_libraries(test_benchmark ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(test_benchmark ${catkin_EXPORTED_TARGETS})
-
 ## Creating executable for ros-integrated test:
-add_executable(test_ros src/test_ros.cpp src/Planner.cpp src/GUI.cpp src/Heuristic.cpp src/Map.cpp src/Vehicle.cpp)
-target_link_libraries(test_ros ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(test_ros ${catkin_EXPORTED_TARGETS})
+add_executable(hybridAstar_node src/ros_interface.cpp src/Planner.cpp src/GUI.cpp src/Heuristic.cpp src/Map.cpp src/Vehicle.cpp)
+target_link_libraries(hybridAstar_node ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_dependencies(hybridAstar_node ${catkin_EXPORTED_TARGETS})
 
 
 ## Creating executable for Velocity Publisher:
@@ -65,7 +55,3 @@ add_executable(velocity_publisher publisher/velocity_publisher.cpp )
 target_link_libraries(velocity_publisher ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(velocity_publisher ${catkin_EXPORTED_TARGETS})
 
-## Creating executable for Obstacle Publisher:
-add_executable(obstacle_publisher publisher/obstacle_publisher.cpp )
-target_link_libraries(obstacle_publisher ${OMPL_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(obstacle_publisher ${catkin_EXPORTED_TARGETS})

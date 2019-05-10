@@ -1,6 +1,5 @@
 <launch>
-  <node pkg="hybrid_astar" type="test_ros" name="hybrid_astar_node" clear_params="true">
-
+  <node pkg="hybrid_astar" type="hybridAstar_node" name="hybrid_astar_node" clear_params="true">
 
       <!-- Placeholders for input remapping. Set your topic names as the "to" values 
       <remap from="/base_pose_ground_truth" to="odometry wala topic"/>
