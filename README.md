@@ -3,14 +3,14 @@
 This is `ros`-integrated package for Hybrid A* Path Planner.The underlying method is similar to A* search algorithm, applied to the 3D kinematic state space of the vehicle, but with a modified state-update rule that captures the continuous state of the vehicle in the discrete nodes of A* thus guaranteeing kinematic feasibility of the path.
 
 #### Prerequisites
-  This is not the official installation process but a medium article thats well formed<br/>
-- [gazebo-8](https://medium.com/@abhiksingla10/setting-up-ros-kinetic-and-gazebo-8-or-9-70f2231af21a?fbclid=IwAR3pPyfB7X_1MiqBNpAEK2-7IqwZ3YtpzuMwxEa8AL5qKq4hSNiTnZbGrQs) <br/>
-  This is car_demo package used for simulation during the development of this package<br/>
-- [car_demo](https://drive.google.com/drive/folders/1t3Mamr8fq8slctGyB_iglyOQkyteMKBQ?usp=sharing)<br/>
+- This is not the official installation process but a medium article thats well formed<br/>
+ [gazebo-8](https://medium.com/@abhiksingla10/setting-up-ros-kinetic-and-gazebo-8-or-9-70f2231af21a?fbclid=IwAR3pPyfB7X_1MiqBNpAEK2-7IqwZ3YtpzuMwxEa8AL5qKq4hSNiTnZbGrQs) <br/>
+- This is car_demo package used for simulation during the development of this package<br/>
+  [car_demo](https://drive.google.com/drive/folders/1t3Mamr8fq8slctGyB_iglyOQkyteMKBQ?usp=sharing)<br/>
   The official package:<br/>
   [car_demo](https://github.com/osrf/car_demo)<br/>
-  This is the official `ros` package for costmap_2d. The associated launch file that work with this gazebo simulation is part of the package. <br/>
-- [costmap_2d](https://github.com/strawlab/navigation/tree/master/costmap_2d)<br/>
+- This is the official `ros` package for costmap_2d. The associated launch file that work with this gazebo simulation is part of the package. <br/>
+  [costmap_2d](https://github.com/strawlab/navigation/tree/master/costmap_2d)<br/>
 
 #### Building
 
