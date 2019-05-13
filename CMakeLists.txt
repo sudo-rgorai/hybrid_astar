@@ -15,14 +15,12 @@ find_package(catkin REQUIRED COMPONENTS
    geometry_msgs
    message_generation
 )
-find_package (Threads)
 
 
 ## OPEN MOTION PLANNING LIBRARY
 find_package(OMPL REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS program_options)
-
 
 
 ## Declare a catkin package

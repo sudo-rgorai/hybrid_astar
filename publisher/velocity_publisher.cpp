@@ -51,7 +51,7 @@ void goalCallback(const geometry_msgs::PoseStamped&  target)
     geometry_msgs::TransformStamped trans_msg;
     
     try{
-        trans_msg = tfBuffer.lookupTransform("map", "odom",ros::Time(0));
+        trans_msg = tfBuffer.lookupTransform("map", target.header.frame_id, ros::Time(0));
         tf2::doTransform(target,trans_goal,trans_msg);
     }
     catch (tf2::TransformException &ex) 
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
         if( sqrt((curr.x-goal.x)*(curr.x-goal.x) + (curr.y-goal.y)*(curr.y-goal.y))< distThreshold)
             vel.linear.x = 0;
         else 
-            vel.linear.x = 2;
+            vel.linear.x = 1;
 
         pub.publish(vel);
         ros::spinOnce();

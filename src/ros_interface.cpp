@@ -72,15 +72,12 @@ class ROSInterface
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
         
-        //due to orientation of base_link_frame wrt vehicle frame
-        // curr.theta = fmod(yaw-M_PI/2+2*M_PI,2*M_PI);
         curr.theta = fmod(yaw+2*M_PI,2*M_PI);
 
-        // cout<<"Distance Left: "<<sqrt((curr.x-destination.x)*(curr.x-destination.x) + (curr.y-destination.y)*(curr.y-destination.y))<<endl;
         if( sqrt((curr.x-destination.x)*(curr.x-destination.x) + (curr.y-destination.y)*(curr.y-destination.y))< distThreshold)
         {
             got_destination = false;
-            cout<<"***************************Destination Reached****************************************"<<endl;
+            cout<<"***************************Waypoint Reached****************************************"<<endl;
         }    
 
         return;
@@ -100,9 +97,7 @@ class ROSInterface
         tf::Matrix3x3 m(q);
         double roll, pitch, yaw;
         m.getRPY(roll, pitch, yaw);
-        
-        //due to orientation of base_link_frame wrt vehicle frame
-        // start.theta = fmod(yaw-M_PI/2+2*M_PI,2*M_PI);
+
         start.theta = fmod(yaw+2*M_PI,2*M_PI);
         got_start = true;
         return;
@@ -152,6 +147,7 @@ class ROSInterface
         map_grid_x = msg->info.width;
         map_grid_y = msg->info.height;
         map_grid_resolution = msg->info.resolution;
+
 
         //costmap is stored in row-major format
         for(int j=0; j<map_grid_y; j++)
@@ -207,14 +203,15 @@ class ROSInterface
 
     nav_msgs::Path convert_to_path_msg(vector<State> path)
     {
+        string trans_frame = "map";
         nav_msgs::Path path_msg;
-        path_msg.header.frame_id = "map";
+        path_msg.header.frame_id = trans_frame;
 
         geometry_msgs::PoseStamped pose, transformed_pose;
         geometry_msgs::TransformStamped transform_msg;
 
         try{
-            transform_msg = tfBuffer.lookupTransform("map", "map", ros::Time(0));
+            transform_msg = tfBuffer.lookupTransform(trans_frame, "map", ros::Time(0));
         }
         catch (tf2::TransformException &ex) 
         {
@@ -283,7 +280,7 @@ class ROSInterface
     }
 };
 
-
+// This function can be called in main if path is to be planned once
 void plan_once(ros::NodeHandle nh)
 { 
     ROSInterface interface(nh);
@@ -315,23 +312,26 @@ void plan_once(ros::NodeHandle nh)
     float planner_grid_resolution = 0.5;
 
     Vehicle car;
+
     GUI display(map_x, map_y, 5); 
     display.draw_obstacles(map, map_grid_resolution);
     display.draw_car(start,car);
-    // display.draw_car(destination,car);
-    display.show(0);
+    display.draw_car(destination,car);
+    display.show(1000);
 
 
     Planner astar(map_x, map_y, map_grid_resolution, planner_grid_resolution);
     vector<State> path = astar.plan(start, destination, car, map, display);
 
+    // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
     vector<State> path_expanded(2*path.size()-1);
     for (int i = 0; i < path.size(); ++i)
     {
         path_expanded[2*i] = path[i];
         if( 2*i+1 < path_expanded.size()) path_expanded[2*i+1] = { (path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2,(path[i].theta+path[i+1].theta)/2,};
     }
-    cout<<"Number of points: "<<path_expanded.size()<<endl;
+    cout<<"Number of points in the generated path: "<<path_expanded.size()<<endl;
+
 
     for(int i=0;i<=path_expanded.size();i++)
     {
@@ -351,10 +351,10 @@ void plan_once(ros::NodeHandle nh)
     }
 
     astar.path.clear();
-    
     return;
 }
 
+// This function can be called in main to repeatedly planning path by publishing waypoints on /move_base_simple/goal
 void plan_repeatedly(ros::NodeHandle nh)
 { 
     ROSInterface interface(nh);
@@ -362,7 +362,8 @@ void plan_repeatedly(ros::NodeHandle nh)
     interface.got_destination = false;
     interface.got_map = true;
 
-    ros::Rate wait_rate(50);
+    cout<<"Waiting for destination"<<endl;
+    ros::Rate rate(10);
     while(ros::ok())
     {
         ros::spinOnce();
@@ -370,14 +371,16 @@ void plan_repeatedly(ros::NodeHandle nh)
         if(interface.got_destination)
             break;
 
-        wait_rate.sleep();
+        rate.sleep();
     }
-
     cout<<"Got destination."<<endl;
 
-    int map_x = 100;
-    int map_y = 100;
-    float map_grid_resolution = 0.5;
+    int map_x, map_y;
+    float map_grid_resolution;
+    ros::param::get("/costmap_node/costmap/width", map_x);
+    ros::param::get("/costmap_node/costmap/height", map_y);
+    ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
+
     float planner_grid_resolution = 0.5;
 
     Planner astar(map_x, map_y, map_grid_resolution, planner_grid_resolution);
@@ -385,7 +388,7 @@ void plan_repeatedly(ros::NodeHandle nh)
     Vehicle car;
     GUI display(map_x, map_y, 5); 
     
-
+    ros::Rate wait_rate(10);
     while(ros::ok())
     {
         interface.got_start = false;
@@ -408,34 +411,28 @@ void plan_repeatedly(ros::NodeHandle nh)
 
         State start = interface.start;
         State destination = interface.destination;
+        
+        // map for every iteration retrived and used to plot obstacles on visualizer
         int** map = interface.map;
 
-        // display.draw_obstacles(map, map_grid_resolution);
-        // display.draw_car(start,car);
-        // display.draw_car(destination,car);
-        // display.show(0);
-    
+        // Planning path
         vector<State> path = astar.plan(start, destination, car, map, display);
+
+        // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
         vector<State> path_expanded(2*path.size()-1);
         for (int i = 0; i < path.size(); ++i)
         {
             path_expanded[2*i] = path[i];
             if( 2*i+1 < path_expanded.size()) path_expanded[2*i+1] = { (path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2,(path[i].theta+path[i+1].theta)/2,};
         }
-        cout<<"Number of points: "<<path_expanded.size()<<endl;
-
-        // for(int i=0;i<=path_expanded.size();i++)
-        // {
-        //     display.draw_car(path_expanded[i], car);
-        //     display.show(1);
-        // } 
-        // display.show(2000);
+        cout<<"Number of points in the generated path: "<<path_expanded.size()<<endl;
 
         nav_msgs::Path path_msg = interface.convert_to_path_msg(path_expanded);
         interface.publish_path(path_msg);
 
-        path_expanded.clear();
+        display.clear();
         astar.path.clear();
+        path_expanded.clear();
         interface.transform_back_destination();
     }
     

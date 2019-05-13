@@ -39,11 +39,15 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 
 vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display)
 {
-	bool DEBUG = true;
+	bool DISPLAY_PATH = false;
+	bool DISPLAY_SEARCH_TREE = false;
 
 	clock_t map_init_start = clock();
 	Map map(obstacles, map_x, map_y, map_grid_resolution, end, car);
 	map_init_time = float(clock()-map_init_start)/CLOCKS_PER_SEC;
+
+	if(DISPLAY_SEARCH_TREE)
+    	display.draw_obstacles(obstacles, map_grid_resolution);
 
 	clock_t dijkstra_start = clock();
 	float dijkstra_grid_resolution = 1;
@@ -94,16 +98,18 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			}
 			reverse(path.begin(), path.end());	
 
-	        if(DEBUG)
+	        if(DISPLAY_PATH)
 	        {
-	         //    display.draw_obstacles(obstacles, map_grid_resolution);
-	         //    for(int i=0;i<=path.size();i++)
-	         //    {
-	         //        display.draw_car(path[i], car);
-	         //        display.show(5);
-	         //    } 
-		     //	   display.show(0);
+		     	display.clear();
 
+	            display.draw_obstacles(obstacles, map_grid_resolution);
+	            for(int i=0;i<=path.size();i++)
+	            {
+	                display.draw_car(path[i], car);
+	                display.show(5);
+	            } 
+		     	display.show(1000);
+		     	display.clear();
 	        }		
 			return path;
 		}
@@ -126,6 +132,12 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				
 			if( !map.checkCollision(nextS) )   //change
 			{
+				if(DISPLAY_SEARCH_TREE)
+				{
+					display.draw_tree(current,nextS);
+					display.show(5);					
+				}
+
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
 				it->g = current.g+1;
 				it->h = heuristic.get_heuristic(*it);
@@ -159,19 +171,19 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					}
 					reverse(path.begin(), path.end());
 
-			        // if(DEBUG)
-			        // {
-			        //     GUI dis(rows, cols, display.scale);
-			        //     dis.draw_obstacles(map.obs);
-			        //     dis.draw_car(start,car);
-			        //     for(int i=0;i<=path.size();i++)
-			        //     {
-			        //         dis.draw_car(path[i], car);
-			        //         dis.show(5);
-			        //     } 
-			        //     dis.show(0);
-			        // }
-					
+			        if(DISPLAY_PATH)
+					{
+				     	display.clear();
+
+			            display.draw_obstacles(obstacles, map_grid_resolution);
+			            for(int i=0;i<=path.size();i++)
+			            {
+			                display.draw_car(path[i], car);
+			                display.show(5);
+			            } 
+				     	display.show(1000);
+				     	display.clear();
+			        }					
 					return path;
 				
 				}
@@ -203,9 +215,14 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				}
 				else
 				{
+					Path.erase(it, Path.end());
 					break;
 				}
-
+			}
+			if(DISPLAY_SEARCH_TREE)
+			{
+				display.draw_dubins(Path);
+				display.show(5);				
 			}
 		}
 		count++;
