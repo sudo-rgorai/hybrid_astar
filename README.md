@@ -17,6 +17,13 @@ This is `ros`-integrated package for Hybrid A* Path Planner.The underlying metho
 1.`git clone` the following repository into your catkin workspace\
 2.`catkin_make` the package
 
+#### `ROS` topics
+
+- odometry topic - `/base_pose_ground_truth`
+- goal topic - `/move_base_simple/goal`  
+- costmap topic - `/costmap_node/costmap/costmap`
+- path topic - `astroid path`
+
 #### Running
 
 **Launching OSRF world**<br/>
