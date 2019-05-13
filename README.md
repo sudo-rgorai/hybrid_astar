@@ -58,7 +58,7 @@ Path Planned by Hybrid A*<br/>
 Rviz Simulation<br/>
 ![image](https://drive.google.com/uc?export=view&id=1Xs8r86dIlGmqcnmqkDH6teeXNFR0b4Bb)
 
-#### Videos
+#### Video for Gazebo simulation
 
 [Video](https://www.youtube.com/watch?v=vPbcxREJunU)
 
