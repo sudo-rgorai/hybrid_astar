@@ -22,7 +22,15 @@ This is `ros`-integrated package for Hybrid A* Path Planner.The underlying metho
 - odometry topic - `/base_pose_ground_truth`
 - goal topic - `/move_base_simple/goal`  
 - costmap topic - `/costmap_node/costmap/costmap`
-- path topic - `astroid path`
+- path topic - `/astroid path`
+
+#### Planner parameters
+
+- DISPLAY_SEARCH_TREE parameter in planner.cpp can be used to visualize the search tree of the planner.
+- DISPLAY_PATH paramter in planner.cpp can be used to visualize the path produced by planner.
+- distThreshold parameter in velocity_publisher.cpp can be used to decide the distance threshold for stopping the vehicle.
+- planner_grid_resolution paramter in ros_interface.cpp can be used to decide the resolution of Hybrid A* grid search.
+- map_grid_resolution parameter is directly assigned from parameters set in yaml file for costmap_2d package.
 
 #### Running
 
