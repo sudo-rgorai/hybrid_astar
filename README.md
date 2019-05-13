@@ -9,7 +9,7 @@ This is `ros`-integrated package for Hybrid A* Path Planner.The underlying metho
   [car_demo](https://drive.google.com/drive/folders/1t3Mamr8fq8slctGyB_iglyOQkyteMKBQ?usp=sharing)<br/>
   The official package:<br/>
   [car_demo](https://github.com/osrf/car_demo)<br/>
-- This is the official `ros` package for costmap_2d. The associated launch file that work with this gazebo simulation is part of the package. <br/>
+- This is the official `ros` package for costmap_2d. The associated launch file that work with this gazebo simulation is part of the Hybrid A* package. <br/>
   [costmap_2d](https://github.com/strawlab/navigation/tree/master/costmap_2d)<br/>
 
 #### Building
@@ -22,13 +22,13 @@ This is `ros`-integrated package for Hybrid A* Path Planner.The underlying metho
 **Launching OSRF world**<br/>
 `roslaunch car_demo demo.launch`
 
-**Next we need to convert the laserscan to costmap_2D**<br/>
+**Launching costmap_2d package**<br/>
 `roslaunch costmap_2d gazebo.launch`
 
 **Launching hybrid astar planner**<br/>
 `rosrun hybrid_astar hybridAstar_node`
 
-**Publishing velocity**<br/> 
+**Launching velocity publisher**<br/> 
 `rosrun hybrid_astar velocity_publisher`<br/>
 
 The previous three steps can done using `hybrid_astar.launch`<br/>
