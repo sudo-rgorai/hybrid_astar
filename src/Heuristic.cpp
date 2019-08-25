@@ -1,6 +1,6 @@
 #include "../include/Heuristic.hpp"
 #include <boost/heap/fibonacci_heap.hpp>
- 
+
 using namespace std;
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
@@ -149,13 +149,13 @@ double Heuristic::DubinCost(State begin, State end, double radius)
 }
 
 
-double Heuristic::get_heuristic(State pos)
+double Heuristic::get_heuristic(State pos,Mat final)
 {
     //cout<<roundDown(pos.x/dijkstra_grid_resolution)<<","<<roundDown(pos.y/dijkstra_grid_resolution)<<endl;
     //cout<<dijkstra_grid_x<<","<<dijkstra_grid_y<<endl;
     float h1 = dijkstra_grid_resolution * d[roundDown(pos.x/dijkstra_grid_resolution)][roundDown(pos.y/dijkstra_grid_resolution)];
     float h2 = DubinCost(pos, target, vehicle.min_radius);
-    return max(h1, h2);
+    return (max(h1, h2)+1.0-1.0*final.at<uchar>(pos.x,pos.y)/255);
 }
 
 vector<State> Heuristic::DubinShot(State begin, State end, double radius)

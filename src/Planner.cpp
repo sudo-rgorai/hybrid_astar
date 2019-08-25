@@ -37,7 +37,7 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 	return;
 }
 
-vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display)
+vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat final)
 {
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
@@ -63,7 +63,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	// Hybrid Astar Openlist Initiates:
 	priority_queue <State, vector<State>> pq;
 	start.g = 0;
-	start.h = heuristic.get_heuristic(start);
+	start.h = heuristic.get_heuristic(start,final);
 	start.parent = NULL;
 	pq.push(start);
 	
@@ -140,7 +140,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
 				it->g = current.g+1;
-				it->h = heuristic.get_heuristic(*it);
+				it->h = heuristic.get_heuristic(*it,final);
 
 				pq.push(*it);
 			}
@@ -201,7 +201,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
 					it->g = prev.g+1;
-					it->h = heuristic.get_heuristic(*it);
+					it->h = heuristic.get_heuristic(*it,final);
 
 					int next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
 					int next_grid_y = roundDown(nextS.y/planner_grid_resolution);

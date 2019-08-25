@@ -1,11 +1,16 @@
+#include"../include/params.hpp"
 #include "../include/Planner.hpp"
 #include "../include/GUI.hpp"
+#include "../include/voronoi.hpp"
 
 #include "ros/ros.h"
 #include "geometry_msgs/PoseArray.h" 
 #include "geometry_msgs/Pose.h" 
 #include "geometry_msgs/PoseStamped.h" 
 #include "geometry_msgs/TransformStamped.h" 
+#include"opencv2/highgui/highgui.hpp"
+#include"opencv2/core/core.hpp"
+#include"opencv2/imgproc/imgproc.hpp"
 
 #include <tf2/LinearMath/Quaternion.h>
 #include "tf2_ros/transform_listener.h"
@@ -26,6 +31,8 @@ typedef struct _Quaternion
     float z;
     float w;
 }Quaternion;
+
+Mat costmap;
 
 class ROSInterface
 {
@@ -147,13 +154,16 @@ class ROSInterface
         map_grid_x = msg->info.width;
         map_grid_y = msg->info.height;
         map_grid_resolution = msg->info.resolution;
-
+        costmap = Mat(map_grid_x,map_grid_y,CV_8UC1,Scalar(0));
+        voronoi(costmap);
 
         //costmap is stored in row-major format
         for(int j=0; j<map_grid_y; j++)
             for(int i=0; i<map_grid_x; i++)
+            {
                 map[i][j] = msg->data[j*200 + i] != 0 ? 1 : 0;
-
+                costmap.at<uchar>(i,j) = map[i][j];
+            }
         got_map = true;
         return;
     }
@@ -321,7 +331,7 @@ void plan_once(ros::NodeHandle nh)
 
 
     Planner astar(map_x, map_y, map_grid_resolution, planner_grid_resolution);
-    vector<State> path = astar.plan(start, destination, car, map, display);
+    vector<State> path = astar.plan(start, destination, car, map, display,final);
 
     // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
     vector<State> path_expanded(2*path.size()-1);
@@ -416,7 +426,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         int** map = interface.map;
 
         // Planning path
-        vector<State> path = astar.plan(start, destination, car, map, display);
+        vector<State> path = astar.plan(start, destination, car, map, display,final);
 
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
         vector<State> path_expanded(2*path.size()-1);
@@ -444,7 +454,7 @@ int main(int argc,char **argv)
 { 
     ros::init(argc,argv,"hybrid_astar_node");
     ros::NodeHandle nh;
-
+    Mat inp=imread("unnamed.jpg",0);
     plan_repeatedly(nh);
     
     return 0;
