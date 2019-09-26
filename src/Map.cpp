@@ -120,30 +120,9 @@ bool Map::checkCollision(State pos)
 
 bool Map::check_min_obs_dis(State pos, Mat obs_dist_global)
 {
-	if(pos.x>=map_x || pos.x<0 || pos.y>=map_y || pos.y<0 )
-		return true;
 	
-	//first use a bounding box around car to check for collision in O(1) time
-	int max_x, min_x, max_y, min_y;
-	max_x =  (pos.x+car.BOT_L*abs(cos(pos.theta))/2+car.BOT_W*abs(sin(pos.theta))/2) + 1;
-	min_x =  (pos.x-car.BOT_L*abs(cos(pos.theta))/2-car.BOT_W*abs(sin(pos.theta))/2) - 1;
-
-	max_y =  (pos.y+car.BOT_L*abs(sin(pos.theta))/2+car.BOT_W*abs(cos(pos.theta))/2) + 1;
-	min_y =  (pos.y-car.BOT_L*abs(sin(pos.theta))/2-car.BOT_W*abs(cos(pos.theta))/2) - 1;
-
-	//possible bug
-	//need to do brute force check (with boundary checking) in this case
-	if(max_x>=map_x || min_x<0 || max_y>=map_y || min_y<0)
-		return true;
-
-	// coordinates in meters to indices in map_grid
-	max_x /= map_grid_resolution;
-	max_y /= map_grid_resolution;
-	min_y /= map_grid_resolution;
-	min_x /= map_grid_resolution;
-	
-
-	if(obs_dist_global.at<uchar>(max_x,max_y)<25||obs_dist_global.at<uchar>(min_x,max_y)<25||obs_dist_global.at<uchar>(max_x,min_y)<25||obs_dist_global.at<uchar>(min_x,min_y)<25)
-	return true;		
+	/*cout<<pos.x<<" "<<pos.y<<endl;*/
+	if(obs_dist_global.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)<0);
+	return true;	
 	return false;
 }
