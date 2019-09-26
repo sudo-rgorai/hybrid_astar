@@ -21,13 +21,14 @@ float distance (point2d source, point2d neighbor)
 	return (sqrt((source.x-neighbor.x)*(source.x-neighbor.x)+(source.y-neighbor.y)*(source.y-neighbor.y)));
 }
 
+float resolution1 = 2.0;
 Heuristic::Heuristic(Map map, float dijkstra_grid_resolution, State target, Vehicle vehicle)
 {
     this->map = map;
     this->dijkstra_grid_resolution = dijkstra_grid_resolution;
     this->target = target;
     this->vehicle = vehicle;
-
+    resolution1 = map.map_grid_resolution;
     dijkstra_grid_x = toInt(map.map_x/dijkstra_grid_resolution);
     dijkstra_grid_y = toInt(map.map_y/dijkstra_grid_resolution);
 
@@ -153,9 +154,15 @@ double Heuristic::get_heuristic(State pos,Mat final)
 {
     //cout<<roundDown(pos.x/dijkstra_grid_resolution)<<","<<roundDown(pos.y/dijkstra_grid_resolution)<<endl;
     //cout<<dijkstra_grid_x<<","<<dijkstra_grid_y<<endl;
-    float h1 = dijkstra_grid_resolution * d[roundDown(pos.x/dijkstra_grid_resolution)][roundDown(pos.y/dijkstra_grid_resolution)];
+    float h1 = /*30.0-30.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255+*/dijkstra_grid_resolution * d[roundDown(pos.x/dijkstra_grid_resolution)][roundDown(pos.y/dijkstra_grid_resolution)];
     float h2 = DubinCost(pos, target, vehicle.min_radius);
-    return (max(h1, h2)+1.0-1.0*final.at<uchar>(pos.x,pos.y)/255);
+    /*cout << "Size : " << h1 << " " << h2 <<endl;
+    cout << "Current position" << final.rows << " " << final.cols <<endl;
+    */
+    /*cout << " Heuristic ..................................................... " << endl;
+   // cout << max(h1,h2) + 10.0-(10.0*final.at<uchar>((int)pos.x*2,(int)pos.y*2))/255 <<endl;
+    cout<<h1<<"  "<<h2<<endl;
+   */ return (max(h1, h2))+30.0-30.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255;
 }
 
 vector<State> Heuristic::DubinShot(State begin, State end, double radius)

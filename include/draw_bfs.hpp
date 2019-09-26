@@ -31,6 +31,7 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 	i=current_node1.x;
 	j=current_node1.y;
 	int l,m;
+	cout<<"before while loop"<<endl;
 	while(!main_q.empty())
 	{
 			if(!main_q.empty())	
@@ -42,7 +43,7 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 				occupancy_grid.at<uchar>(i,j)=255;
 				if(current_node1.cost<255) cost_image.at<uchar>(i,j)=(int)current_node1.cost;
 				else cost_image.at<uchar>(i,j) = 254;
-				nearest_obs.at<uchar>(i,j)=current_node1.color_code*20;
+				nearest_obs.at<uchar>(i,j)=current_node1.color_code*1;
 						
 			}     
 			for(l=i-1;l<=i+1;l++)
@@ -67,6 +68,8 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 			}
 			
 	}
+	cout<<"after while loop"<<endl;
+	
 	return nearest_obs;
 
 }

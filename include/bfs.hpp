@@ -52,6 +52,7 @@ void main_bfs(Mat input_obstacle_map)     //Used to identify individual obstacle
 			}
 		}
 	}
+	cout << "**************No of obstacles : \n\n\n\n\n\n\n\n\n\n" << count;
 }
 
 void bfs(Mat obstacle_map,Mat occupancy_grid,int i,int j,int count)   //Used to apply bfs to travers whole of the obstacle edge

@@ -1,14 +1,16 @@
 #include "../include/Planner.hpp"
+#include <boost/heap/fibonacci_heap.hpp>
 
 #define PI 3.14159
-
+Mat finaluse;
 bool operator<(const State& a, const State& b)
 {
-	return a.g + a.h > b.g + b.h;
+	return (a.g + a.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)a.x*2,(int)a.y*2))/255)*/)> (b.g + b.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)b.x*2,(int)b.y*2))/255)*/);
 }
 
 Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_grid_resolution)
 {
+	
 	this->map_x = map_x;
 	this->map_y = map_y;
 	this->map_grid_resolution = map_grid_resolution;
@@ -37,8 +39,14 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 	return;
 }
 
-vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat final)
+vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat final,Mat obs_dist_global)
 {
+	/*cout << start.x << " " << start.y << endl;
+	cout << end.x << " " << end.y << endl;
+	
+	int b=0;
+	int a = 3/b;*/
+	finaluse = final;
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
 
@@ -193,7 +201,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 2 )
 					continue;
 
-				if( !map.checkCollision(nextS) ) //change
+				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global)) //change
 				{
 					int prev_grid_x = roundDown(prev.x/planner_grid_resolution);;
 					int prev_grid_y = roundDown(prev.y/planner_grid_resolution);

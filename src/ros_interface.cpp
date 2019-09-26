@@ -154,16 +154,25 @@ class ROSInterface
         map_grid_x = msg->info.width;
         map_grid_y = msg->info.height;
         map_grid_resolution = msg->info.resolution;
+        cout << map_origin_x << " " << map_origin_y << " " << map_grid_x << " " << map_grid_y << " " << map_grid_resolution << endl;
+        //waitKey(0) ;
         costmap = Mat(map_grid_x,map_grid_y,CV_8UC1,Scalar(0));
-        voronoi(costmap);
+       
 
         //costmap is stored in row-major format
+       // cout<<"mapgx*****************************************\n\n\n\n\n\n\n\n\n\n "<<map_grid_x<<"  y  "<<map_grid_y<<endl;
         for(int j=0; j<map_grid_y; j++)
             for(int i=0; i<map_grid_x; i++)
             {
                 map[i][j] = msg->data[j*200 + i] != 0 ? 1 : 0;
-                costmap.at<uchar>(i,j) = map[i][j];
+                costmap.at<uchar>(i,j) = 255*map[i][j];
             }
+
+        cout << "Reached 1" <<endl;
+        //obs_dist_global=costmap.clone();
+        voronoi(costmap);
+        cout << "Reached 2" <<endl;
+        
         got_map = true;
         return;
     }
@@ -331,7 +340,7 @@ void plan_once(ros::NodeHandle nh)
 
 
     Planner astar(map_x, map_y, map_grid_resolution, planner_grid_resolution);
-    vector<State> path = astar.plan(start, destination, car, map, display,final);
+    vector<State> path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
 
     // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
     vector<State> path_expanded(2*path.size()-1);
@@ -426,7 +435,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         int** map = interface.map;
 
         // Planning path
-        vector<State> path = astar.plan(start, destination, car, map, display,final);
+        vector<State> path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
 
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
         vector<State> path_expanded(2*path.size()-1);
@@ -454,7 +463,8 @@ int main(int argc,char **argv)
 { 
     ros::init(argc,argv,"hybrid_astar_node");
     ros::NodeHandle nh;
-    Mat inp=imread("unnamed.jpg",0);
+    obs_dist_global=Mat(200,200,CV_8UC1,Scalar(255));
+    //Mat inp=imread("unnamed.jpg",0);
     plan_repeatedly(nh);
     
     return 0;

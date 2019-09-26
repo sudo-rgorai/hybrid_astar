@@ -40,7 +40,9 @@ Mat voronoi_cost_image;  //Used to store nearest voronoi edge distance for each 
 Mat voronoi_edges;  //Used to represent voronoi edges
 Mat common;
 Mat final;
-int max_obs_dist = 250;  //Parameteers
-int alpha = 250;
+Mat obs_dist_global;
+int max_obs_dist = 50;  //Parameteers
+int alpha = 50;
+int is_voronoi=1;
 
 #endif
