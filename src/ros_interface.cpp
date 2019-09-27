@@ -146,21 +146,12 @@ class ROSInterface
     {
         if(got_map)
             return;
-
-        cout<<"Getting map"<<endl;
-
         map_origin_x = msg->info.origin.position.x;
         map_origin_y = msg->info.origin.position.y;
         map_grid_x = msg->info.width;
         map_grid_y = msg->info.height;
         map_grid_resolution = msg->info.resolution;
-        cout << map_origin_x << " " << map_origin_y << " " << map_grid_x << " " << map_grid_y << " " << map_grid_resolution << endl;
-        //waitKey(0) ;
         costmap = Mat(map_grid_x,map_grid_y,CV_8UC1,Scalar(0));
-       
-
-        //costmap is stored in row-major format
-       // cout<<"mapgx*****************************************\n\n\n\n\n\n\n\n\n\n "<<map_grid_x<<"  y  "<<map_grid_y<<endl;
         for(int j=0; j<map_grid_y; j++)
             for(int i=0; i<map_grid_x; i++)
             {
@@ -168,12 +159,7 @@ class ROSInterface
                 costmap.at<uchar>(i,j) = 255*map[i][j];
             }
 
-        cout << "Reached 1" <<endl;
-        //obs_dist_global=costmap.clone();
-        voronoi(costmap);
-        cout<<obs_dist_global.at<uchar>(50,50)<<endl;
-        cout << "Reached 2" <<endl;
-        
+        voronoi(costmap); //To get the voronoi values with the input costmap and store them into Final matrix which is a global variable 
         got_map = true;
         return;
     }

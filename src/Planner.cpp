@@ -5,7 +5,7 @@
 
 bool operator<(const State& a, const State& b)
 {
-	return (a.g + a.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)a.x*2,(int)a.y*2))/255)*/)> (b.g + b.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)b.x*2,(int)b.y*2))/255)*/);
+	return (a.g + a.h)> (b.g + b.h);
 }
 
 Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_grid_resolution)
@@ -39,14 +39,8 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 	return;
 }
 
-vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat final,Mat obs_dist_global)
+vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat voronoi_values,Mat obs_dist) //voronoi_values matrix is the matrix storing the voronoi values at all the positions and obs_dist is the matrix storing the obstacle distances at each position
 {
-	/*cout << start.x << " " << start.y << endl;
-	cout << end.x << " " << end.y << endl;
-	
-	int b=0;
-	int a = 3/b;*/
-	//finaluse = final;
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
 
@@ -71,7 +65,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	// Hybrid Astar Openlist Initiates:
 	priority_queue <State, vector<State>> pq;
 	start.g = 0;
-	start.h = heuristic.get_heuristic(start,final);
+	start.h = heuristic.get_heuristic(start,voronoi_values);
 	start.parent = NULL;
 	pq.push(start);
 	
@@ -148,7 +142,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
 				it->g = current.g+1;
-				it->h = heuristic.get_heuristic(*it,final);
+				it->h = heuristic.get_heuristic(*it,voronoi_values);
 
 				pq.push(*it);
 			}
@@ -201,7 +195,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 2 )
 					continue;
 
-				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global)) //change
+				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist)) //changed to start dubins shot only if the expected path is away from obstacles 
 				{
 					int prev_grid_x = roundDown(prev.x/planner_grid_resolution);;
 					int prev_grid_y = roundDown(prev.y/planner_grid_resolution);
@@ -209,7 +203,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
 					it->g = prev.g+1;
-					it->h = heuristic.get_heuristic(*it,final);
+					it->h = heuristic.get_heuristic(*it,voronoi_values);
 
 					int next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
 					int next_grid_y = roundDown(nextS.y/planner_grid_resolution);

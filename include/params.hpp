@@ -39,9 +39,9 @@ Mat cost_image;  //Used to store nearest obstacle distance for each point
 Mat voronoi_cost_image;  //Used to store nearest voronoi edge distance for each point
 Mat voronoi_edges;  //Used to represent voronoi edges
 Mat common;
-Mat final;
-Mat obs_dist_global;
-int max_obs_dist = 50;  //Parameteers
+Mat final;    //Matrix storing all the voronoi values globally
+Mat obs_dist_global;    //Matrix storing all the obstacle distance values at each point globally 
+int max_obs_dist = 50;  //Parameters
 int alpha = 50;
 int is_voronoi=1;
 
