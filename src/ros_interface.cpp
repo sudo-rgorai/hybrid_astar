@@ -171,6 +171,7 @@ class ROSInterface
         cout << "Reached 1" <<endl;
         //obs_dist_global=costmap.clone();
         voronoi(costmap);
+        cout<<obs_dist_global.at<uchar>(50,50)<<endl;
         cout << "Reached 2" <<endl;
         
         got_map = true;
@@ -435,6 +436,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         int** map = interface.map;
 
         // Planning path
+       // cout<<final.at<uchar>(50,50)<<"  eee"<<endl;
         vector<State> path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
 
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
@@ -463,7 +465,7 @@ int main(int argc,char **argv)
 { 
     ros::init(argc,argv,"hybrid_astar_node");
     ros::NodeHandle nh;
-    obs_dist_global=Mat(200,200,CV_8UC1,Scalar(255));
+    //obs_dist_global=Mat(200,200,CV_8UC1,Scalar(255));
     //Mat inp=imread("unnamed.jpg",0);
     plan_repeatedly(nh);
     

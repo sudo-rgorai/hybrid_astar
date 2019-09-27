@@ -2,7 +2,7 @@
 #include <boost/heap/fibonacci_heap.hpp>
 
 #define PI 3.14159
-Mat finaluse;
+
 bool operator<(const State& a, const State& b)
 {
 	return (a.g + a.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)a.x*2,(int)a.y*2))/255)*/)> (b.g + b.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)b.x*2,(int)b.y*2))/255)*/);
@@ -46,7 +46,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	
 	int b=0;
 	int a = 3/b;*/
-	finaluse = final;
+	//finaluse = final;
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
 
