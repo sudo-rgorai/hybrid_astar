@@ -116,7 +116,7 @@ void voronoi(Mat input)
 	imshow("Input with Borders",input_border);
 	imshow("Output",output_regions);
 	imshow("obstacle_cost_image",obs_dist_global);
-	for(int i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 255; 
+	//for(int i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 255; 
 	imshow("voronoi_cost_image",voronoi_cost_image);
 	imshow("voronoi_edges_image",voronoi_edges);
 

@@ -175,7 +175,9 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					while( temp.parent != NULL )
 					{
 						path.push_back(temp);
+						cout<<"before seg fault"<<endl;
 						temp= *(temp.parent);
+						cout<<"afterrr seg fault"<<endl;
 					}
 					reverse(path.begin(), path.end());
 

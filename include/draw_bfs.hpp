@@ -43,7 +43,7 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 				occupancy_grid.at<uchar>(i,j)=255;
 				if(current_node1.cost<255) cost_image.at<uchar>(i,j)=(int)current_node1.cost;
 				else cost_image.at<uchar>(i,j) = 254;
-				nearest_obs.at<uchar>(i,j)=current_node1.color_code*1;
+				nearest_obs.at<uchar>(i,j)=current_node1.color_code*10;
 						
 			}     
 			for(l=i-1;l<=i+1;l++)
@@ -57,7 +57,7 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 							temp_node1=Node1(l,m,current_node1.color_code,current_node1.cost+1.0+(0.414*((abs(l-i)+abs(m-j)+1)%2)));
 							main_q.push(temp_node1);
 						}
-						else if(nearest_obs.at<uchar>(l,m)!=current_node1.color_code*20&&input_obstacle_map.at<uchar>(l,m)==0)
+						else if(nearest_obs.at<uchar>(l,m)!=current_node1.color_code*10&&input_obstacle_map.at<uchar>(l,m)==0)
 						{
 							voronoi_edges.at<uchar>(l,m)=255;
 							Node1 tem=Node1(l,m,0,0.0);
