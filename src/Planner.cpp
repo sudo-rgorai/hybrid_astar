@@ -94,7 +94,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 		visited[current_grid_x][current_grid_y][current_grid_theta] = true;
 		visited_state[current_grid_x][current_grid_y][current_grid_theta] = current;	
-
+		cout << "Current node :" << current.x << " " <<current.y << " " << current.theta <<endl;
 		// Checks if it has reached the goal
 		if(map.isReached(current))
 		{	
@@ -149,6 +149,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
 				it->g = current.g+1;
 				it->h = heuristic.get_heuristic(*it,final);
+				cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
 
 				pq.push(*it);
 			}
@@ -156,6 +157,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 		// At every few iterations we try to calculate the Dubins Path and add the states 
 		// to the openlist. Once it collides we stop further iterations. 
+		int prev_grid_x,prev_grid_y,prev_grid_theta,next_grid_x,next_grid_y,next_grid_theta;
 		if( count%4==3 )
 		{	
 			
@@ -172,10 +174,12 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				if(map.isReached(nextS))
 				{
 					State temp=check;
+					
 					while( temp.parent != NULL )
 					{
 						path.push_back(temp);
 						cout<<"before seg fault"<<endl;
+						cout << temp.x << " " << temp.y << " " << temp.theta << "Parent : " << (temp.parent)->x << " " << (temp.parent)->y << " " << (temp.parent)->theta;
 						temp= *(temp.parent);
 						cout<<"afterrr seg fault"<<endl;
 					}
@@ -205,20 +209,20 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global)) //change
 				{
-					int prev_grid_x = roundDown(prev.x/planner_grid_resolution);;
-					int prev_grid_y = roundDown(prev.y/planner_grid_resolution);
-					int prev_grid_theta = ((int)(prev.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
+					prev_grid_x = roundDown(prev.x/planner_grid_resolution);;
+					prev_grid_y = roundDown(prev.y/planner_grid_resolution);
+					prev_grid_theta = ((int)(prev.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
 					it->g = prev.g+1;
 					it->h = heuristic.get_heuristic(*it,final);
 
-					int next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
-					int next_grid_y = roundDown(nextS.y/planner_grid_resolution);
-					int next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
-					
+					next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
+					next_grid_y = roundDown(nextS.y/planner_grid_resolution);
+					next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
+					cout << "Visited : " << visited[next_grid_x][next_grid_y][next_grid_theta] <<endl;
+					cout << "Node added from dubins : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
 					visited_state[next_grid_x][next_grid_y][next_grid_theta] = *it;
-
 					check=*it;
 					prev=nextS;
 					pq.push(*it);
@@ -236,6 +240,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			}
 		}
 		count++;
+		count = count%4;
 	}
 	cout<<"Goal cannot be reached"<<endl;
 }
