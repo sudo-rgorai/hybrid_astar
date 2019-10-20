@@ -46,7 +46,7 @@ void voronoi(Mat input)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Mat input_border(input.rows,input.cols,CV_8UC1,Scalar(0));
 	int i,j;
-	cout << 1 <<endl;
+	//cout << 1 <<endl;
 	//To binarise the image
 	for(i=0;i<input.rows;i++)
 	{
@@ -58,7 +58,7 @@ void voronoi(Mat input)
 				input.at<uchar>(i,j)=0;
 		}
 	}
-	cout << 2 <<endl;
+	//cout << 2 <<endl;
 
 //To invert the image(comment this section if it is not required to be inverted i.e. if the obstacles are already black)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -92,34 +92,34 @@ void voronoi(Mat input)
 			}
 		}
 	}
-	cout << 3 <<endl;
+	//cout << 3 <<endl;
 
 	Mat output_colored;
 	Mat pushed;
 	common = Mat(input.rows,input.cols,CV_8UC1,Scalar(0));
 	main_bfs(input_border);
-	cout << 4 <<endl;
+	//cout << 4 <<endl;
 
 	Mat output_regions(input.rows,input.cols,CV_8UC1,Scalar(0));
 	imshow("common",common);
 	output_regions=find_obstacle_dist(input);
-	cout << "wtf 1" <<endl;
+	//cout << "wtf 1" <<endl;
 
 	find_edge_cost(voronoi_edges);
-	cout << "wtf 2" <<endl;
+	//cout << "wtf 2" <<endl;
 	obs_dist_global=cost_image.clone();
 	namedWindow("Final",WINDOW_NORMAL);  //To show the results 
 
 //Comment these lines if you don't want the intermediate steps to be printed
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-	imshow("Input",input);
+	/*imshow("Input",input);
 	imshow("Input with Borders",input_border);
 	imshow("Output",output_regions);
 	imshow("obstacle_cost_image",obs_dist_global);
 	//for(int i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 255; 
 	imshow("voronoi_cost_image",voronoi_cost_image);
 	imshow("voronoi_edges_image",voronoi_edges);
-
+*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	createTrackbar("Alpha","Final",&alpha,1000);
 	createTrackbar("Max Obsacle Distance","Final",&max_obs_dist,1000);

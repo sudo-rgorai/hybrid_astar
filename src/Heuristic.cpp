@@ -164,7 +164,7 @@ double Heuristic::get_heuristic(State pos,Mat final)
     
    */ 
   // cout<<"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh" << h1<<"  "<<h2<<endl;
-    return (max(h1, h2))+12.0-12.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255;
+    return (max(h1, h2));//+12.0-12.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255;
 }
 
 vector<State> Heuristic::DubinShot(State begin, State end, double radius)

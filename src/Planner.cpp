@@ -20,12 +20,12 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 	planner_grid_y = toInt(map_y/planner_grid_resolution);
 	planner_grid_theta = 72;
 	
-	visited_state=new State**[planner_grid_x];
+	visited_state=new State**[2*planner_grid_x];
 	for(int i=0;i<planner_grid_x;i++)
 	{
-		visited_state[i]=new State*[planner_grid_y];
+		visited_state[i]=new State*[2*planner_grid_y];
 		for(int j=0;j<planner_grid_y;j++)
-			visited_state[i][j]=new State[72];
+			visited_state[i][j]=new State[2*72];
 	}
 
 	visited=new bool**[planner_grid_x];
@@ -94,7 +94,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 		visited[current_grid_x][current_grid_y][current_grid_theta] = true;
 		visited_state[current_grid_x][current_grid_y][current_grid_theta] = current;	
-		cout << "Current node :" << current.x << " " <<current.y << " " << current.theta <<endl;
+		//cout << "Current node :" << current.x << " " <<current.y << " " << current.theta <<endl;
 		// Checks if it has reached the goal
 		if(map.isReached(current))
 		{	
@@ -131,7 +131,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			if( !map.isValid(nextS))
 				continue;
 
-			int next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
+			int next_grid_x = roundDown(nextS.x/planner_grid_resolution);
 			int next_grid_y = roundDown(nextS.y/planner_grid_resolution);
 			int next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 				
@@ -147,9 +147,9 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				}
 
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
-				it->g = current.g+1;
+				it->g = current.g+1+1.0-1.0*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;;
 				it->h = heuristic.get_heuristic(*it,final);
-				cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
+				//cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
 
 				pq.push(*it);
 			}
@@ -214,22 +214,21 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					prev_grid_theta = ((int)(prev.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
-					it->g = prev.g+1;
+					it->g = prev.g+sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2))+1.0-1.0*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;
 					it->h = heuristic.get_heuristic(*it,final);
 
 					next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
 					next_grid_y = roundDown(nextS.y/planner_grid_resolution);
 					next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
-					cout << "Visited : " << visited[next_grid_x][next_grid_y][next_grid_theta] <<endl;
-					cout << "Node added from dubins : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
+					//cout << "Visited : " << visited[next_grid_x][next_grid_y][next_grid_theta] <<endl;
+					//cout << "Node added from dubins : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
 					visited_state[next_grid_x][next_grid_y][next_grid_theta] = *it;
 					check=*it;
 					prev=nextS;
-					pq.push(*it);
 				}
 				else
 				{
-					Path.erase(it, Path.end());
+					pq.push(check);
 					break;
 				}
 			}
