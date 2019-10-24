@@ -79,7 +79,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int count=0;
 	while(!pq.empty())
 	{
-
+		cout << pq.size() << endl;
 		State current=pq.top();
 		pq.pop();
 
@@ -178,10 +178,10 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					while( temp.parent != NULL )
 					{
 						path.push_back(temp);
-						cout<<"before seg fault"<<endl;
-						cout << temp.x << " " << temp.y << " " << temp.theta << "Parent : " << (temp.parent)->x << " " << (temp.parent)->y << " " << (temp.parent)->theta;
+						//cout<<"before seg fault"<<endl;
+						//cout << temp.x << " " << temp.y << " " << temp.theta << "Parent : " << (temp.parent)->x << " " << (temp.parent)->y << " " << (temp.parent)->theta;
 						temp= *(temp.parent);
-						cout<<"afterrr seg fault"<<endl;
+						//cout<<"afterrr seg fault"<<endl;
 					}
 					reverse(path.begin(), path.end());
 
@@ -225,10 +225,12 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					visited_state[next_grid_x][next_grid_y][next_grid_theta] = *it;
 					check=*it;
 					prev=nextS;
+					pq.push(*it);
+					
 				}
 				else
 				{
-					pq.push(check);
+					
 					break;
 				}
 			}
