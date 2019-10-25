@@ -49,6 +49,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	//finaluse = final;
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
+	bool ReedShepp_DEBUG = true;
 
 	clock_t map_init_start = clock();
 	Map map(obstacles, map_x, map_y, map_grid_resolution, end, car);
@@ -155,13 +156,32 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			}
 		}
 
-		// At every few iterations we try to calculate the Dubins Path and add the states 
+		// At every few iterations we try to calculate the ReedShepp Path and add the states 
 		// to the openlist. Once it collides we stop further iterations. 
 		int prev_grid_x,prev_grid_y,prev_grid_theta,next_grid_x,next_grid_y,next_grid_theta;
 		if( count%4==3 )
 		{	
 			
-			vector<State> Path = heuristic.DubinShot(current,end,car.min_radius);
+			vector<State> Path = heuristic.ReedSheppShot(current,end,car.min_radius);
+			if(ReedShepp_DEBUG)
+			{
+				cout<<"ReedShepp called"<<endl;
+				display.clear();
+
+	            display.draw_obstacles(obstacles, map_grid_resolution);
+	            cout<<"<<>>"<<endl;
+	            for(int i=0;i<Path.size();i++)
+	            {
+	            	cout<<Path[i].x<<" "<<Path[i].y<<" "<<Path[i].theta<<endl;
+	                display.draw_car(Path[i], car);
+	                display.show(5);
+	            } 
+	            cout<<"<<>>"<<endl;
+		     	display.show(1000);
+		     	display.clear();			
+				cout<<"ReedShepp loop started"<<endl;
+			}
+
 
 			State prev = current, check=current;
 			for(vector<State>::iterator it= Path.begin(); it!=Path.end();it++)
@@ -197,7 +217,9 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			            } 
 				     	display.show(1000);
 				     	display.clear();
-			        }					
+			        }	
+			        if(ReedShepp_DEBUG)
+			        	cout<<"Reached goal Through ReedShepp"<<endl;				
 					return path;
 				
 				}
@@ -221,7 +243,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					next_grid_y = roundDown(nextS.y/planner_grid_resolution);
 					next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 					//cout << "Visited : " << visited[next_grid_x][next_grid_y][next_grid_theta] <<endl;
-					//cout << "Node added from dubins : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
+					//cout << "Node added from ReedShepp : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
 					visited_state[next_grid_x][next_grid_y][next_grid_theta] = *it;
 					check=*it;
 					prev=nextS;
@@ -236,9 +258,11 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 			}
 			if(DISPLAY_SEARCH_TREE)
 			{
-				display.draw_dubins(Path);
+				display.draw_ReedShepp(Path);
 				display.show(5);				
 			}
+			if(ReedShepp_DEBUG)
+				cout<<"ReedShepp loop ended"<<endl;
 		}
 		count++;
 		count = count%4;

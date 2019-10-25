@@ -34,7 +34,7 @@ void GUI::draw_car(State state, Vehicle car)
 	return;
 }
 
-void GUI::draw_dubins( vector<State> Path )
+void GUI::draw_ReedShepp( vector<State> Path )
 {
 	for(vector<State>::iterator next= Path.begin(); next!=Path.end();next++)
 		display.at<Vec3b>(next->x*scale,next->y*scale) = { 255, 0, 0 };		

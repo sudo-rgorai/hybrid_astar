@@ -106,8 +106,8 @@ Heuristic::Heuristic(Map map, float dijkstra_grid_resolution, State target, Vehi
 
 }
 
-// Dubin's Path
-double Heuristic::DubinCost(State begin, State end, double radius)
+// ReedShepp's Path
+double Heuristic::ReedSheppCost(State begin, State end, double radius)
 {
 	bool DEBUG=false;
     vector<State> nextStates;
@@ -141,9 +141,9 @@ double Heuristic::DubinCost(State begin, State end, double radius)
         cout<<x1<<" "<<y1<<" "<<theta1<<" "<<x2<<" "<<y2<<" "<<theta2<<endl;
     }
     
-    // http://ompl.kavrakilab.org/classompl_1_1base_1_1DubinsStateSpace_1_1DubinsPath.html
-    ob::DubinsStateSpace DP(radius,true);
-    auto Path=DP.dubins(start,goal);
+    // https://ompl.kavrakilab.org/classompl_1_1base_1_1ReedsSheppStateSpace.html
+    ob::ReedsSheppStateSpace RSP(radius);
+    auto Path=RSP.reedsShepp(start,goal);
     if(DEBUG)
     	cout<<"Path Length : "<<Path.length()<<endl;
     return Path.length()*radius;
@@ -155,7 +155,7 @@ double Heuristic::get_heuristic(State pos,Mat final)
     //cout<<roundDown(pos.x/dijkstra_grid_resolution)<<","<<roundDown(pos.y/dijkstra_grid_resolution)<<endl;
     //cout<<dijkstra_grid_x<<","<<dijkstra_grid_y<<endl;
     float h1 = /*30.0-30.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255+*/dijkstra_grid_resolution * d[roundDown(pos.x/dijkstra_grid_resolution)][roundDown(pos.y/dijkstra_grid_resolution)];
-    float h2 = DubinCost(pos, target, vehicle.min_radius);
+    float h2 = ReedSheppCost(pos, target, vehicle.min_radius);
     /*cout << "Size : " << h1 << " " << h2 <<endl;
     cout << "Current position" << final.rows << " " << final.cols <<endl;
     */
@@ -167,9 +167,10 @@ double Heuristic::get_heuristic(State pos,Mat final)
     return (max(h1, h2));//+12.0-12.0*final.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5)/255;
 }
 
-vector<State> Heuristic::DubinShot(State begin, State end, double radius)
+vector<State> Heuristic::ReedSheppShot(State begin, State end, double radius)
 {
     bool DEBUG=false;
+
     vector<State> nextStates;
 
     // Declaration of an OMPL Coordinate System  
@@ -194,144 +195,271 @@ vector<State> Heuristic::DubinShot(State begin, State end, double radius)
     t->setY(end.y);
     t->setYaw(end.theta);
     
+    DEBUG = true;
     if(DEBUG)
     {
         double x1=s->getX(), y1=s->getY() ,theta1=s->getYaw();
         double x2=t->getX(), y2=t->getY() ,theta2=t->getYaw();
-        cout<<"Inside Dubins "<<x1<<" "<<y1<<" "<<theta1<<" "<<x2<<" "<<y2<<" "<<theta2<<endl;
+        cout<<"Inside ReedShepp "<<x1<<" "<<y1<<" "<<theta1<<" "<<x2<<" "<<y2<<" "<<theta2<<endl;
     }
     
-    // http://ompl.kavrakilab.org/classompl_1_1base_1_1DubinsStateSpace_1_1DubinsPath.html
-    ob::DubinsStateSpace DP(radius,true);
-    auto Path=DP.dubins(start,goal);
+    // https://ompl.kavrakilab.org/classompl_1_1base_1_1ReedsSheppStateSpace.html
+    ob::ReedsSheppStateSpace RSP(radius);
+    auto Path=RSP.reedsShepp(start,goal);
+
 
     if(DEBUG)
     {
-        // This gives the total distance travelled along a curved path :DubinsCost
-        cout<<"Dubins Distance : "<<Path.length()*radius<<endl;
+        // This gives the total distance travelled along a curved path :ReedSheppCost
+        cout<<"ReedShepp Distance : "<<Path.length()*radius<<endl;
 
         /*
-        The type of dubins curve possible are:
-        {DUBINS_LEFT, DUBINS_STRAIGHT, DUBINS_LEFT},
-        {DUBINS_RIGHT, DUBINS_STRAIGHT, DUBINS_RIGHT},
-        {DUBINS_RIGHT, DUBINS_STRAIGHT, DUBINS_LEFT},
-        {DUBINS_LEFT, DUBINS_STRAIGHT, DUBINS_RIGHT},
-        {DUBINS_RIGHT, DUBINS_LEFT, DUBINS_RIGHT},
-        {DUBINS_LEFT, DUBINS_RIGHT, DUBINS_LEFT}}
+        The type of ReedShepp curves possible are:
+        {RS_LEFT, RS_RIGHT, RS_LEFT, RS_NOP, RS_NOP},         
+        {RS_RIGHT, RS_LEFT, RS_RIGHT, RS_NOP, RS_NOP},        
+        {RS_LEFT, RS_RIGHT, RS_LEFT, RS_RIGHT, RS_NOP},       
+        {RS_RIGHT, RS_LEFT, RS_RIGHT, RS_LEFT, RS_NOP},       
+        {RS_LEFT, RS_RIGHT, RS_STRAIGHT, RS_LEFT, RS_NOP},    
+        {RS_RIGHT, RS_LEFT, RS_STRAIGHT, RS_RIGHT, RS_NOP},   
+        {RS_LEFT, RS_STRAIGHT, RS_RIGHT, RS_LEFT, RS_NOP},    
+        {RS_RIGHT, RS_STRAIGHT, RS_LEFT, RS_RIGHT, RS_NOP},   
+        {RS_LEFT, RS_RIGHT, RS_STRAIGHT, RS_RIGHT, RS_NOP},   
+        {RS_RIGHT, RS_LEFT, RS_STRAIGHT, RS_LEFT, RS_NOP},    
+        {RS_RIGHT, RS_STRAIGHT, RS_RIGHT, RS_LEFT, RS_NOP},   
+        {RS_LEFT, RS_STRAIGHT, RS_LEFT, RS_RIGHT, RS_NOP},    
+        {RS_LEFT, RS_STRAIGHT, RS_RIGHT, RS_NOP, RS_NOP},     
+        {RS_RIGHT, RS_STRAIGHT, RS_LEFT, RS_NOP, RS_NOP},     
+        {RS_LEFT, RS_STRAIGHT, RS_LEFT, RS_NOP, RS_NOP},      
+        {RS_RIGHT, RS_STRAIGHT, RS_RIGHT, RS_NOP, RS_NOP},    
+        {RS_LEFT, RS_RIGHT, RS_STRAIGHT, RS_LEFT, RS_RIGHT},  
+        {RS_RIGHT, RS_LEFT, RS_STRAIGHT, RS_RIGHT, RS_LEFT}   
 
         Here in OMPL implementation the following enum are used :
-        DUBINS_LEFT=0 , DUBINS_STRAIGHT=1, DUBINS_RIGHT=2
+        RS_NOP=0 , RS_LEFT=1, RS_STRAIGHT=2, RS_RIGHT=3
         */
-        cout<<"Dubins Type : "<<Path.type_[0]<<" "<<Path.type_[1]<<" "<<Path.type_[2]<<endl;
+        cout<<"RS Type : "<<Path.type_[0]<<" "<<Path.type_[1]<<" "<<Path.type_[2]<<" "<<Path.type_[3]<<" "<<Path.length_[4]<<endl;
 
         // It gives path length corresponding to each of the three component curves :
-        cout<<"Length_0 :"<<Path.length_[0]<<endl;
-        cout<<"Length_1 :"<<Path.length_[1]<<endl;
-        cout<<"Length_2 :"<<Path.length_[2]<<endl;
+        cout<<"Length_0 :"<<Path.length_[0]*radius<<endl;
+        cout<<"Length_1 :"<<Path.length_[1]*radius<<endl;
+        cout<<"Length_2 :"<<Path.length_[2]*radius<<endl;
+        cout<<"Length_3 :"<<Path.length_[3]*radius<<endl;
+        cout<<"Length_4 :"<<Path.length_[4]*radius<<endl;
     }
 
-    int stride = 1,d=2;
-    State E1,E2,next;
 
-    if(DEBUG)
-	    cout<<"Inside First Loop"<<endl;
-    
-    double alhpa1 = (Path.type_[0]==0)?1*Path.length_[0]:-1*Path.length_[0];
-    if( Path.length_[0]>0.1 )
+    float stride = 1,d=2;
+    State E,next;
+
+    E.x = begin.x;
+    E.y = begin.y;
+    E.theta = begin.theta;
+
+    for(int i=0;i<5;i++)
     {
-        while(stride < Path.length_[0]*radius)
+        stride=1;
+
+        if(Path.type_[i]==1)
         {
-            next.x = (begin.x - alhpa1/abs(alhpa1)*( radius*sin(begin.theta) - radius*sin( alhpa1*stride/(Path.length_[0]*radius) +begin.theta )));
-            next.y = (begin.y + alhpa1/abs(alhpa1)*( radius*cos(begin.theta) - radius*cos( alhpa1*stride/(Path.length_[0]*radius) +begin.theta )));
-            next.theta = begin.theta + (float)(alhpa1*stride/(Path.length_[0]*radius)) ;
-            nextStates.push_back(next);        
-            
-            if(DEBUG)            
-                cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
-            
-            stride+=d;
+            // Left Turn
+            if( abs(Path.length_[i])>0.1 )
+            {
+                if(Path.length_[i]>0)
+                {
+                    if(DEBUG)
+                        cout<<"taking left"<<endl;
+
+                    while(stride < abs(Path.length_[i]*radius))
+                    {
+                        next.x = (E.x - ( radius*sin(E.theta) - radius*sin(stride/radius + E.theta )));
+                        next.y = (E.y + ( radius*cos(E.theta) - radius*cos( stride/radius + E.theta )));
+                        next.theta = E.theta + (float)(stride/radius);
+                        nextStates.push_back(next);        
+                        
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+                        
+                        stride+=d;
+                    }
+
+                    E.x = (E.x - (radius*sin(E.theta) - radius*sin( Path.length_[i] +E.theta )));
+                    E.y = (E.y + (radius*cos(E.theta) - radius*cos( Path.length_[i] +E.theta )));
+                    E.theta = E.theta + Path.length_[i] ;
+            	    if(DEBUG)
+            			cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E); 
+                }
+                else
+                {
+                    if(DEBUG)
+                        cout<<"taking reverse left"<<endl;
+
+                    stride = -1;
+                    while(abs(stride) < abs(Path.length_[i]*radius))
+                    {
+                        next.x = (E.x - ( radius*sin(E.theta) - radius*sin(stride/radius + E.theta )));
+                        next.y = (E.y + ( radius*cos(E.theta) - radius*cos( stride/radius + E.theta )));
+                        next.theta = E.theta + (float)(stride/radius);
+                        nextStates.push_back(next);        
+                        
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+                        
+                        stride-=d;
+                    }
+
+                    E.x = (E.x - (radius*sin(E.theta) - radius*sin( Path.length_[i] +E.theta )));
+                    E.y = (E.y + (radius*cos(E.theta) - radius*cos( Path.length_[i] +E.theta )));
+                    E.theta = E.theta + Path.length_[i] ;
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E); 
+                }       
+            }
+        }
+        else if(Path.type_[i]==3)
+        {
+            // Right Turn
+            radius = (float)(-1*radius);
+            if( abs(Path.length_[i])>0.1 )
+            {
+                if(Path.length_[i]>0)
+                {
+                    if(DEBUG)
+                        cout<<"taking right"<<endl;
+
+                    while(stride < abs(Path.length_[i]*radius))
+                    {
+                        next.x = (E.x - ( radius*sin(E.theta) - radius*sin(stride/radius + E.theta )));
+                        next.y = (E.y + ( radius*cos(E.theta) - radius*cos(stride/radius + E.theta )));
+                        next.theta = E.theta + (float)(stride/radius);
+                        nextStates.push_back(next);        
+
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+                        
+                        stride+=d;
+                    }
+
+                    E.x = (E.x - (radius*sin(E.theta) - radius*sin( -Path.length_[i] +E.theta )));
+                    E.y = (E.y + (radius*cos(E.theta) - radius*cos( -Path.length_[i] +E.theta )));
+                    E.theta = E.theta - Path.length_[i] ;
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E);  
+                }
+                else
+                {
+                    if(DEBUG)
+                        cout<<"taking reverse right"<<endl;
+
+                    stride=-1;
+                    while(abs(stride) < abs(Path.length_[i]*radius))
+                    {
+                        next.x = (E.x - ( radius*sin(E.theta) - radius*sin(stride/radius + E.theta )));
+                        next.y = (E.y + ( radius*cos(E.theta) - radius*cos(stride/radius + E.theta )));
+                        next.theta = E.theta + (float)(stride/radius);
+                        nextStates.push_back(next);        
+
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+                        
+                        stride-=d;
+                    }
+
+                    E.x = (E.x - (radius*sin(E.theta) - radius*sin( -Path.length_[i] +E.theta )));
+                    E.y = (E.y + (radius*cos(E.theta) - radius*cos( -Path.length_[i] +E.theta )));
+                    E.theta = E.theta - Path.length_[i] ;
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E);   
+                }      
+            }
+            radius = (float)(-1*radius);
+        } 
+        else if(Path.type_[i]==2)
+        {
+            // Straight
+            if(abs(Path.length_[i])>0.1)
+            {
+                if(Path.length_[i]>0)
+                {
+                    if(DEBUG)
+                        cout<<"taking Straight"<<endl;
+
+                    while(stride < Path.length_[i]*radius)
+                    {
+                        next.x = E.x + stride*cos(E.theta);
+                        next.y = E.y + stride*sin(E.theta);
+                        next.theta = E.theta;
+                        nextStates.push_back(next);
+
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+
+                        stride+=d;
+                    }
+
+                    E.x = E.x + Path.length_[i]*radius*cos(E.theta);
+                    E.y = E.y + Path.length_[i]*radius*sin(E.theta);
+
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E);
+                }
+                else
+                {
+                    if(DEBUG)
+                        cout<<"taking reverse"<<endl;
+
+                    stride = -1;
+                    while(abs(stride) < abs(Path.length_[i]*radius))
+                    {
+                        next.x = E.x + stride*cos(E.theta);
+                        next.y = E.y + stride*sin(E.theta);
+                        next.theta = E.theta;
+                        nextStates.push_back(next);
+
+                        if(DEBUG)            
+                            cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
+
+                        stride-=d;
+                    }
+
+                    E.x = E.x + Path.length_[i]*radius*cos(E.theta);
+                    E.y = E.y + Path.length_[i]*radius*sin(E.theta);
+
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+
+                    nextStates.push_back(E);
+                }
+
+                
+            }
+        }
+        else
+        {
+            continue;
         }
 
-        E1.x = (begin.x - alhpa1/abs(alhpa1)*(radius*sin(begin.theta) - radius*sin( alhpa1+begin.theta )));
-        E1.y = (begin.y + alhpa1/abs(alhpa1)*(radius*cos(begin.theta) - radius*cos( alhpa1+begin.theta )));
-        E1.theta = begin.theta + alhpa1 ;
-	    if(DEBUG)
-			cout<<E1.x<<" "<< E1.y <<" "<<E1.theta<<endl;
-
-        nextStates.push_back(E1);        
     }
-    else
-    {
-        E1.x = begin.x;
-        E1.y = begin.y; 
-        E1.theta = begin.theta;
-    }    
+ 
     
     if(DEBUG)
-    	cout<<"Inside Second Loop"<<endl;
-    stride = 1;
-    
-    if( Path.length_[1]>0.1 )
-    {
-        while( stride<Path.length_[1]*radius )
+        for(int i=0;i<nextStates.size();i++)
         {
-            next.x = (E1.x + stride*cos(E1.theta) );
-            next.y = (E1.y + stride*sin(E1.theta) );
-            next.theta = E1.theta ;
-            nextStates.push_back(next);
-
-            if(DEBUG)            
-                cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
-            
-            stride+=d;
+            cout<<"x: "<<nextStates[i].x<<" y: "<<nextStates[i].y<<endl;
         }
-        E2.x = (E1.x + Path.length_[1]*radius*cos(E1.theta) );
-        E2.y = (E1.y + Path.length_[1]*radius*sin(E1.theta) );
-        E2.theta = E1.theta ;
-    
-        if(DEBUG)
-	        cout<<E2.x<<" "<< E2.y <<" "<<E2.theta<<endl;
-    
-        nextStates.push_back(E2);
-    }
-    else
-    {
-        E2.x = E1.x;
-        E2.y = E1.y;
-        E2.theta = E1.theta;
-    }
-    
-    if(DEBUG)
-    	cout<<"Inside Third Loop"<<endl;
-    
-    double alhpa2 = (Path.type_[2]==0)?1*Path.length_[2]:-1*Path.length_[2];
-    stride = 1;
-    if( Path.length_[2]>0.1 )
-    {
-        while( stride<Path.length_[2]*radius )
-        {
-           
-            next.x = (E2.x - alhpa2/abs(alhpa2)*(radius*sin(E2.theta) - radius*sin( alhpa2*stride/(Path.length_[2]*radius)+E2.theta )));
-            next.y = (E2.y + alhpa2/abs(alhpa2)*(radius*cos(E2.theta) - radius*cos( alhpa2*stride/(Path.length_[2]*radius)+E2.theta )));
-            next.theta = E2.theta + (float)(alhpa2*stride/(Path.length_[2]*radius)) ;
-            nextStates.push_back(next);
 
-            if(DEBUG)                       
-                cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
-            
-            stride+=d;
-        }
-        next.x = (E2.x - alhpa2/abs(alhpa2)*(radius*sin(E2.theta) - radius*sin(alhpa2 + E2.theta )));
-        next.y = (E2.y + alhpa2/abs(alhpa2)*(radius*cos(E2.theta) - radius*cos(alhpa2 + E2.theta )));
-        next.theta = E2.theta + alhpa2 ;
-	
-        if(DEBUG)
-			cout<<next.x<<" "<< next.y <<" "<<next.theta<<endl;
-    
-        nextStates.push_back(next);
-    }
 	if(DEBUG)
-    	cout<<"End of Dubins Shot"<<endl;
+    	cout<<"End of ReddShepp Shot"<<endl;
 
+    DEBUG = false;
     return nextStates;
 }
