@@ -15,13 +15,19 @@ Mat find_edge_cost(Mat input)
 {	
 	Node1 temp_node1=Node1(0,0,0,0),current_node1=Node1(0,0,0,0);
 	Mat occupancy_grid=Mat(input.rows,input.cols,CV_8UC1,Scalar(0));
+		int i,j;
+	voronoi_cost_image = Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
+	for(i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 254;
+	if(main_q2.empty())
+	{
+		return input;
+	}
 	current_node1=main_q2.top();
-	int i,j;
+
 	i=current_node1.x;
 	j=current_node1.y;
 	int l,m;
-	voronoi_cost_image = Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
-	for(i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 255; 
+	 
 	
 	while(!main_q2.empty())
 	{

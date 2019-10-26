@@ -46,7 +46,7 @@ void voronoi(Mat input)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Mat input_border(input.rows,input.cols,CV_8UC1,Scalar(0));
 	int i,j;
-	//cout << 1 <<endl;
+	//cout <<"dghftht" <<endl;
 	//To binarise the image
 	for(i=0;i<input.rows;i++)
 	{
@@ -93,12 +93,27 @@ void voronoi(Mat input)
 		}
 	}
 	//cout << 3 <<endl;
-
+	bool flag1=true;
+	for(i=0;i<input.rows;i++)
+	{
+		for(j=0;j<input.cols;j++)
+		{
+			if(input.at<uchar>(i,j)==255)
+			flag1=false;
+		}
+	}
+	if(flag1)
+	{
+		final=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
+		obs_dist_global=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
+	//	cout<<"sdjbksd"<<endl;
+		return;
+	}
 	Mat output_colored;
 	Mat pushed;
 	common = Mat(input.rows,input.cols,CV_8UC1,Scalar(0));
 	main_bfs(input_border);
-	//cout << 4 <<endl;
+	//cout << "fd"<<endl;
 
 	Mat output_regions(input.rows,input.cols,CV_8UC1,Scalar(0));
 	imshow("common",common);
@@ -128,6 +143,7 @@ void voronoi(Mat input)
 	//while(1){
 		final = calculate_voronoi_values(cost_image,voronoi_cost_image);
 		imshow("Final",final);
+		//cout<<"fhvk"<<endl;
 		waitKey(10);
 	//}
 	//waitKey(0);
