@@ -28,7 +28,7 @@ class Heuristic
 		double get_heuristic(State pos,Mat final);
 		float** d;
 
-		double DubinCost(State,State,double);
-		vector<State> DubinShot(State begin, State end, double min_radius);
+		double ReedSheppCost(State,State,double);
+		vector<State> ReedSheppShot(State begin, State end, double min_radius);
 };
 #endif

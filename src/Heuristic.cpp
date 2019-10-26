@@ -109,7 +109,7 @@ Heuristic::Heuristic(Map map, float dijkstra_grid_resolution, State target, Vehi
 // ReedShepp's Path
 double Heuristic::ReedSheppCost(State begin, State end, double radius)
 {
-	bool DEBUG=false;
+    bool DEBUG=false;
     vector<State> nextStates;
 
     // Declaration of an OMPL Coordinate System  
@@ -145,7 +145,7 @@ double Heuristic::ReedSheppCost(State begin, State end, double radius)
     ob::ReedsSheppStateSpace RSP(radius);
     auto Path=RSP.reedsShepp(start,goal);
     if(DEBUG)
-    	cout<<"Path Length : "<<Path.length()<<endl;
+        cout<<"Path Length : "<<Path.length()<<endl;
     return Path.length()*radius;
 }
 
@@ -285,8 +285,8 @@ vector<State> Heuristic::ReedSheppShot(State begin, State end, double radius)
                     E.x = (E.x - (radius*sin(E.theta) - radius*sin( Path.length_[i] +E.theta )));
                     E.y = (E.y + (radius*cos(E.theta) - radius*cos( Path.length_[i] +E.theta )));
                     E.theta = E.theta + Path.length_[i] ;
-            	    if(DEBUG)
-            			cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
+                    if(DEBUG)
+                        cout<<E.x<<" "<< E.y <<" "<<E.theta<<endl;
 
                     nextStates.push_back(E); 
                 }
@@ -457,8 +457,8 @@ vector<State> Heuristic::ReedSheppShot(State begin, State end, double radius)
             cout<<"x: "<<nextStates[i].x<<" y: "<<nextStates[i].y<<endl;
         }
 
-	if(DEBUG)
-    	cout<<"End of ReddShepp Shot"<<endl;
+    if(DEBUG)
+        cout<<"End of ReddShepp Shot"<<endl;
 
     DEBUG = false;
     return nextStates;

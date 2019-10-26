@@ -95,7 +95,7 @@ int main(int argc, char **argv)
         if( sqrt((curr.x-goal.x)*(curr.x-goal.x) + (curr.y-goal.y)*(curr.y-goal.y))< distThreshold)
             vel.linear.x = 0;
         else 
-            vel.linear.x = 1;
+            vel.linear.x = 3;
 
         pub.publish(vel);
         ros::spinOnce();
