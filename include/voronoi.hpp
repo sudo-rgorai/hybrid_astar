@@ -32,9 +32,6 @@ Mat calculate_voronoi_values(Mat obs_dist,Mat voronoi_dist){
 
 		}
 	}
-	/*for(int i=0;i<outpu.rows;i++) for(int j=0;j<outpu.cols;j++) outpu.at<uchar>(i,j) = 254;
-	for(int i=0*outpu.rows;i<0.5*outpu.rows;i++) for(int j=0*outpu.cols;j<0.5*outpu.cols;j++) outpu.at<uchar>(i,j) =0 ;
-	*/
 	return outpu;
 }
 
@@ -46,8 +43,6 @@ void voronoi(Mat input)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Mat input_border(input.rows,input.cols,CV_8UC1,Scalar(0));
 	int i,j;
-	//cout << 1 <<endl;
-	//To binarise the image
 	for(i=0;i<input.rows;i++)
 	{
 		for(j=0;j<input.cols;j++)
@@ -58,8 +53,7 @@ void voronoi(Mat input)
 				input.at<uchar>(i,j)=0;
 		}
 	}
-	//cout << 2 <<endl;
-
+	
 //To invert the image(comment this section if it is not required to be inverted i.e. if the obstacles are already black)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/*
@@ -92,21 +86,29 @@ void voronoi(Mat input)
 			}
 		}
 	}
-	//cout << 3 <<endl;
-
+	bool flag1=true;
+	for(i=0;i<input.rows;i++)
+	{
+		for(j=0;j<input.cols;j++)
+		{
+			if(input.at<uchar>(i,j)==255)
+			flag1=false;
+		}
+	}
+	if(flag1)
+	{
+		final=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
+		obs_dist_global=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
+		return;
+	}
 	Mat output_colored;
 	Mat pushed;
 	common = Mat(input.rows,input.cols,CV_8UC1,Scalar(0));
 	main_bfs(input_border);
-	//cout << 4 <<endl;
-
 	Mat output_regions(input.rows,input.cols,CV_8UC1,Scalar(0));
 	imshow("common",common);
 	output_regions=find_obstacle_dist(input);
-	//cout << "wtf 1" <<endl;
-
 	find_edge_cost(voronoi_edges);
-	//cout << "wtf 2" <<endl;
 	obs_dist_global=cost_image.clone();
 	namedWindow("Final",WINDOW_NORMAL);  //To show the results 
 
@@ -125,12 +127,9 @@ void voronoi(Mat input)
 	createTrackbar("Max Obsacle Distance","Final",&max_obs_dist,1000);
 	createTrackbar("USE_VORoNOI","Final",&is_voronoi,1);
 	
-	//while(1){
-		final = calculate_voronoi_values(cost_image,voronoi_cost_image);
-		imshow("Final",final);
-		waitKey(10);
-	//}
-	//waitKey(0);
+	final = calculate_voronoi_values(cost_image,voronoi_cost_image);
+	imshow("Final",final);
+	waitKey(10);
 	
 }
 

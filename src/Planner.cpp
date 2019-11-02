@@ -5,7 +5,7 @@
 
 bool operator<(const State& a, const State& b)
 {
-	return (a.g + a.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)a.x*2,(int)a.y*2))/255)*/)> (b.g + b.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)b.x*2,(int)b.y*2))/255)*/);
+	return (a.g + a.h  )> (b.g + b.h  );
 }
 
 Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_grid_resolution)
@@ -41,12 +41,6 @@ Planner::Planner(int map_x, int map_y, float map_grid_resolution, float planner_
 
 vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles, GUI display,Mat final,Mat obs_dist_global)
 {
-	/*cout << start.x << " " << start.y << endl;
-	cout << end.x << " " << end.y << endl;
-	
-	int b=0;
-	int a = 3/b;*/
-	//finaluse = final;
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
 	bool ReedShepp_debug = true;
@@ -150,8 +144,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
 				it->g = current.g+1+1.0-1.0*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;;
 				it->h = heuristic.get_heuristic(*it,final);
-				//cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
-
+				
 				pq.push(*it);
 			}
 		}
@@ -198,8 +191,6 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					while( temp.parent != NULL )
 					{
 						path.push_back(temp);
-						//cout<<"before seg fault"<<endl;
-						//cout << temp.x << " " << temp.y << " " << temp.theta << "Parent : " << (temp.parent)->x << " " << (temp.parent)->y << " " << (temp.parent)->theta;
 						temp= *(temp.parent);
 						//cout<<"afterrr seg fault"<<endl;
 					}
@@ -226,7 +217,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				
 				}
 
-				// This is to insure that consecutive points are not very close .Because of being very close 
+				// This is to ensure that consecutive points are not very close .Because of being very close 
 				// consecutive points were assigned same parents and caused problems while storing path.
 				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 2 )
 					continue;
@@ -244,8 +235,6 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
 					next_grid_y = roundDown(nextS.y/planner_grid_resolution);
 					next_grid_theta = ((int)(nextS.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
-					//cout << "Visited : " << visited[next_grid_x][next_grid_y][next_grid_theta] <<endl;
-					//cout << "Node added from dubins : " << (*it).x << " " << (*it).y << " " <<(*it).theta << " " << " Parent : " << (*(*it).parent).x << " " << (*(*it).parent).y << " " << (*(*it).parent).theta <<endl;  
 					visited_state[next_grid_x][next_grid_y][next_grid_theta] = *it;
 					check=*it;
 					prev=nextS;
