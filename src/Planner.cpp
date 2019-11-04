@@ -43,7 +43,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 {
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
-	bool ReedShepp_debug = true;
+	bool ReedShepp_debug = false;
 
 	clock_t map_init_start = clock();
 	Map map(obstacles, map_x, map_y, map_grid_resolution, end, car);
@@ -171,7 +171,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	                display.show(5);
 	            } 
 	            cout<<"<<>>"<<endl;
-		     	display.show(1000);
+		     	display.show(100);
 		     	display.clear();	
 		     	cout<<"ReedShepp loop started"<<endl;		
 			}
