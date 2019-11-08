@@ -128,7 +128,15 @@ void voronoi(Mat input)
 	createTrackbar("USE_VORoNOI","Final",&is_voronoi,1);
 	
 	final = calculate_voronoi_values(cost_image,voronoi_cost_image);
-	imshow("Final",final);
+	Mat final1=final.clone();
+	for(i=0;i<final.rows;i++)
+	{
+		for(j=0;j<final.cols;j++)
+		{
+			final1.at<uchar>(i,j)=final.at<uchar>(final.rows-i,final.cols-j);
+		}
+	}
+	imshow("Final",final1);
 	waitKey(10);
 	
 }
