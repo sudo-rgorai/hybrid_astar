@@ -2,6 +2,7 @@
 #include <boost/heap/fibonacci_heap.hpp>
 
 #define PI 3.14159
+#define WT 1.1
 
 bool operator<(const State& a, const State& b)
 {
@@ -147,7 +148,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				}
 
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
-				it->g = current.g+1+1.0-1.0*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;;
+				it->g = current.g+1+WT-WT*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;;
 				it->h = heuristic.get_heuristic(*it,final);
 				//cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
 
@@ -214,7 +215,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					prev_grid_theta = ((int)(prev.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
-					it->g = prev.g+sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2))+1.0-1.0*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;
+					it->g = prev.g+sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2))+WT-WT*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;
 					it->h = heuristic.get_heuristic(*it,final);
 
 					next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
@@ -244,6 +245,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 		count = count%4;
 	}
 	cout<<"Goal cannot be reached"<<endl;
+	return path;
 }
 
 

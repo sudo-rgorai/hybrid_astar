@@ -409,12 +409,13 @@ void plan_repeatedly(ros::NodeHandle nh)
     GUI display(map_x, map_y, 5); 
     
     ros::Rate wait_rate(10);
+    clock_t start_time=clock();
     while(ros::ok())
     {
         interface.got_start = false;
         interface.got_map = false;
 
-        clock_t start_time=clock();
+        //clock_t start_time=clock();
         while(ros::ok())
         {
             ros::spinOnce();
@@ -424,9 +425,9 @@ void plan_repeatedly(ros::NodeHandle nh)
 
             wait_rate.sleep();
         }
-        clock_t end_time=clock();
+       /* clock_t end_time=clock();
 
-        cout<<"Total time taken: "<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;
+        cout<<"Total time taken: "<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;*/
         interface.transform_start_and_destination();
 
         State start = interface.start;
@@ -438,7 +439,13 @@ void plan_repeatedly(ros::NodeHandle nh)
         // Planning path
        // cout<<final.at<uchar>(50,50)<<"  eee"<<endl;
         vector<State> path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
-
+        if(path.empty())
+        {display.clear();
+        astar.path.clear();
+        //path_expanded.clear();
+        interface.transform_back_destination();
+            continue;
+        }
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
         vector<State> path_expanded(2*path.size()-1);
         for (int i = 0; i < path.size(); ++i)
@@ -447,10 +454,16 @@ void plan_repeatedly(ros::NodeHandle nh)
             if( 2*i+1 < path_expanded.size()) path_expanded[2*i+1] = { (path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2,(path[i].theta+path[i+1].theta)/2,};
         }
         cout<<"Number of points in the generated path: "<<path_expanded.size()<<endl;
+        clock_t curr_time=clock();
 
+        cout<<"Total time taken: "<<(double)(curr_time-start_time)/CLOCKS_PER_SEC<<endl;
         nav_msgs::Path path_msg = interface.convert_to_path_msg(path_expanded);
+        if((double)(curr_time-start_time)/CLOCKS_PER_SEC>0.9)
+        {
+        cout<<".................Published........................."<<endl;
         interface.publish_path(path_msg);
-
+        start_time=clock();
+        }
         display.clear();
         astar.path.clear();
         path_expanded.clear();

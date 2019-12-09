@@ -142,7 +142,15 @@ void voronoi(Mat input)
 	
 	//while(1){
 		final = calculate_voronoi_values(cost_image,voronoi_cost_image);
-		imshow("Final",final);
+		Mat final1=final.clone();
+		for(i=0;i<final.rows;i++)
+		{
+			for(j=0;j<final.cols;j++)
+			{
+				final1.at<uchar>(i,j)=final.at<uchar>(final.rows-i-1,final.cols-j-1);
+			}
+		}
+		imshow("Final",final1);
 		//cout<<"fhvk"<<endl;
 		waitKey(10);
 	//}
