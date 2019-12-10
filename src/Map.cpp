@@ -119,12 +119,12 @@ bool Map::checkCollision(State pos)
 }
 
 
-bool Map::check_min_obs_dis(State pos, Mat obs_dist_global)
+bool Map::check_min_obs_dis(State pos, Mat obs_dist_global,int dist_dubin_shot)
 {
 	
 	//cout<<pos.x<<" "<<pos.y<<endl;
 	int k= (int)obs_dist_global.at<uchar>((int)pos.x/0.5,(int)pos.y/0.5);
-	if(k<8)
+	if(k<dist_dubin_shot)
 	return true;	
 	return false;
 }

@@ -136,9 +136,9 @@ void voronoi(Mat input)
 	imshow("voronoi_edges_image",voronoi_edges);
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-	createTrackbar("Alpha","Final",&alpha,1000);
+	/*createTrackbar("Alpha","Final",&alpha,1000);
 	createTrackbar("Max Obsacle Distance","Final",&max_obs_dist,1000);
-	createTrackbar("USE_VORoNOI","Final",&is_voronoi,1);
+	createTrackbar("USE_VORoNOI","Final",&is_voronoi,1);*/
 	
 	//while(1){
 		final = calculate_voronoi_values(cost_image,voronoi_cost_image);

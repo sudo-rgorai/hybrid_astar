@@ -3,6 +3,8 @@
 #include "../include/GUI.hpp"
 #include "../include/voronoi.hpp"
 
+#include <dynamic_reconfigure/server.h>
+#include <hybrid_astar/params_hybrid_astarConfig.h>
 #include "ros/ros.h"
 #include "geometry_msgs/PoseArray.h" 
 #include "geometry_msgs/Pose.h" 
@@ -23,6 +25,8 @@
 #include "nav_msgs/Odometry.h"
 #include "nav_msgs/Path.h"
 #include "nav_msgs/Odometry.h"
+
+
 
 typedef struct _Quaternion
 {
@@ -400,6 +404,7 @@ void plan_repeatedly(ros::NodeHandle nh)
     ros::param::get("/costmap_node/costmap/width", map_x);
     ros::param::get("/costmap_node/costmap/height", map_y);
     ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
+    
 
     float planner_grid_resolution = 0.5;
 
@@ -418,7 +423,12 @@ void plan_repeatedly(ros::NodeHandle nh)
         //clock_t start_time=clock();
         while(ros::ok())
         {
+            ros::param::get("/hybrid_astar_node/alpha",alpha);
+            ros::param::get("/hybrid_astar_node/max_obs_dist", max_obs_dist);
+         //   ros::param::get("/hybrid_astar_node/dist_dubin_shot", dist_dubin_shot);
+
             ros::spinOnce();
+
 
             if(interface.got_start && interface.got_map && interface.got_destination)
                 break;
@@ -477,6 +487,8 @@ void plan_repeatedly(ros::NodeHandle nh)
 int main(int argc,char **argv)
 { 
     ros::init(argc,argv,"hybrid_astar_node");
+    dynamic_reconfigure::Server<dynamic_tutorials::params_hybrid_astarConfig> server;
+   
     ros::NodeHandle nh;
     //obs_dist_global=Mat(200,200,CV_8UC1,Scalar(255));
     //Mat inp=imread("unnamed.jpg",0);

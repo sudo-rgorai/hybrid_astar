@@ -1,5 +1,6 @@
 #include "../include/Planner.hpp"
 #include <boost/heap/fibonacci_heap.hpp>
+#include "ros/ros.h"
 
 #define PI 3.14159
 #define WT 1.1
@@ -48,6 +49,9 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int b=0;
 	int a = 3/b;*/
 	//finaluse = final;
+	int dist_dubin_shot;
+	 ros::param::get("/hybrid_astar_node/dist_dubin_shot", dist_dubin_shot);
+
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
 
@@ -208,7 +212,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 2 )
 					continue;
 
-				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global)) //change
+				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global,dist_dubin_shot)) //change
 				{
 					prev_grid_x = roundDown(prev.x/planner_grid_resolution);;
 					prev_grid_y = roundDown(prev.y/planner_grid_resolution);

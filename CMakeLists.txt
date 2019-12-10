@@ -6,6 +6,7 @@ set( CMAKE_CXX_STANDARD 11 )
 
 
 find_package(catkin REQUIRED COMPONENTS 
+   dynamic_reconfigure
    tf
    tf2
    rospy
@@ -14,8 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
    std_msgs
    geometry_msgs
    message_generation
+	
 )
-
+generate_dynamic_reconfigure_options(
+cfg/params_hybrid_astar.cfg
+)
 
 ## OPEN MOTION PLANNING LIBRARY
 find_package(OMPL REQUIRED)
