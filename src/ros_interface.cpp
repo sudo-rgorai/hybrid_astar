@@ -168,7 +168,7 @@ class ROSInterface
         for(int j=0; j<map_grid_y; j++)
             for(int i=0; i<map_grid_x; i++)
             {
-                map[i][j] = msg->data[j*200 + i] != 0 ? 1 : 0;
+                map[i][j] = msg->data[j*map_grid_x + i] != 0 ? 1 : 0;
                 costmap.at<uchar>(i,j) = 255*map[i][j];
             }
 
@@ -277,16 +277,24 @@ class ROSInterface
     {
         this->nh = nh;
 
-        int* map_array=new int[200*200];
-        this->map = new int*[200];
-        for(int i=0;i<200;i++)
-            (this->map)[i] = map_array + 200*i;
 
         curr_sub = nh.subscribe("/base_pose_ground_truth", 1, &ROSInterface::repeatedDestination, this);
         start_sub = nh.subscribe("/base_pose_ground_truth", 1, &ROSInterface::startCallback, this);
         destination_sub = nh.subscribe("/move_base_simple/goal", 1, &ROSInterface::destinationCallback, this);
         map_sub = nh.subscribe("/costmap_node/costmap/costmap", 1, &ROSInterface::mapCallback, this);
         path_pub = nh.advertise<nav_msgs::Path>("/astroid_path", 10);
+
+        int map_x,map_y;
+        ros::param::get("/costmap_node/costmap/width", map_x);
+        ros::param::get("/costmap_node/costmap/height", map_y);
+        ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
+        //int map_grid_x,map_grid_y;
+        map_x = (int)map_x/map_grid_resolution;
+        map_y = (int)map_y/map_grid_resolution;
+        int* map_array=new int[map_x*map_y];
+        this->map = new int*[map_x];
+        for(int i=0;i<map_y;i++)
+            (this->map)[i] = map_array + map_x*i;
 
         got_start = true;
         got_destination = true;
@@ -333,7 +341,8 @@ void plan_once(ros::NodeHandle nh)
     int map_x = interface.map_grid_x * interface.map_grid_resolution;
     int map_y = interface.map_grid_y * interface.map_grid_resolution;
     float map_grid_resolution = interface.map_grid_resolution;
-    float planner_grid_resolution = 0.5;
+    float planner_grid_resolution;
+    ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
 
     Vehicle car;
 
@@ -401,12 +410,14 @@ void plan_repeatedly(ros::NodeHandle nh)
 
     int map_x, map_y;
     float map_grid_resolution;
+    float planner_grid_resolution;
     ros::param::get("/costmap_node/costmap/width", map_x);
     ros::param::get("/costmap_node/costmap/height", map_y);
     ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
     
 
-    float planner_grid_resolution = 0.5;
+    
+    ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
 
     Planner astar(map_x, map_y, map_grid_resolution, planner_grid_resolution);
 
@@ -417,6 +428,14 @@ void plan_repeatedly(ros::NodeHandle nh)
     clock_t start_time=clock();
     while(ros::ok())
     {
+        ros::param::get("/costmap_node/costmap/width", map_x);
+        ros::param::get("/costmap_node/costmap/height", map_y);
+        ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
+    
+
+    
+        ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
+        astar=Planner(map_x, map_y, map_grid_resolution, planner_grid_resolution);
         interface.got_start = false;
         interface.got_map = false;
 

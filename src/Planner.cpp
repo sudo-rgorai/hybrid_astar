@@ -3,7 +3,7 @@
 #include "ros/ros.h"
 
 #define PI 3.14159
-#define WT 1.1
+/*#define WT 1.1*/
 
 bool operator<(const State& a, const State& b)
 {
@@ -50,7 +50,10 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int a = 3/b;*/
 	//finaluse = final;
 	int dist_dubin_shot;
+	float WT;
 	 ros::param::get("/hybrid_astar_node/dist_dubin_shot", dist_dubin_shot);
+	 ros::param::get("/hybrid_astar_node/WT", WT);
+
 
 	bool DISPLAY_PATH = false;
 	bool DISPLAY_SEARCH_TREE = false;
@@ -152,7 +155,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 				}
 
 				it->parent = &(visited_state[current_grid_x][current_grid_y][current_grid_theta]);
-				it->g = current.g+1+WT-WT*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;;
+				it->g = current.g+1+WT-WT*final.at<uchar>((int)it->x/map_grid_resolution,(int)it->y/map_grid_resolution)/255;;
 				it->h = heuristic.get_heuristic(*it,final);
 				//cout << "Node added normally : " << it->x << " " << it->y << " " <<it->theta << " " << "Parent : " << it->parent->x << " " << it->parent->y << " " << it->parent->theta <<endl;  
 
@@ -219,7 +222,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 					prev_grid_theta = ((int)(prev.theta*planner_grid_theta/(2*PI)))%planner_grid_theta;
 					
 					it->parent = &(visited_state[prev_grid_x][prev_grid_y][prev_grid_theta]);
-					it->g = prev.g+sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2))+WT-WT*final.at<uchar>((int)it->x/0.5,(int)it->y/0.5)/255;
+					it->g = prev.g+sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2))+WT-WT*final.at<uchar>((int)it->x/map_grid_resolution,(int)it->y/map_grid_resolution)/255;
 					it->h = heuristic.get_heuristic(*it,final);
 
 					next_grid_x = roundDown(nextS.x/planner_grid_resolution);;
