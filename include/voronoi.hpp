@@ -152,7 +152,7 @@ void voronoi(Mat input)
 		}
 		imshow("Final",final1);
 		//cout<<"fhvk"<<endl;
-		waitKey(10);
+		waitKey(100);
 	//}
 	//waitKey(0);
 	

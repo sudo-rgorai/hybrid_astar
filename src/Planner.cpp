@@ -84,7 +84,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int count=0;
 	while(!pq.empty())
 	{
-		cout << pq.size() << endl;
+		//cout << pq.size() << endl;
 		State current=pq.top();
 		pq.pop();
 
