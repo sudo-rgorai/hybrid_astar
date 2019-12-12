@@ -435,7 +435,10 @@ void plan_repeatedly(ros::NodeHandle nh)
 
     
         ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
-        astar=Planner(map_x, map_y, map_grid_resolution, planner_grid_resolution);
+        astar.map_x=map_x;
+        astar.map_y=map_y;
+        astar.map_grid_resolution=map_grid_resolution;
+        astar.planner_grid_resolution=planner_grid_resolution;
         interface.got_start = false;
         interface.got_map = false;
 
