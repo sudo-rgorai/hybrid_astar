@@ -101,8 +101,8 @@ bool Map::checkCollision(State pos)
 	min_y /= map_grid_resolution;
 	min_x /= map_grid_resolution;
 	
-	if(acc_obs_map[max_x][max_y]+acc_obs_map[min_x][min_y]==acc_obs_map[max_x][min_y]+acc_obs_map[min_x][max_y])
-		return false;
+	//if(acc_obs_map[max_x][max_y]+acc_obs_map[min_x][min_y]==acc_obs_map[max_x][min_y]+acc_obs_map[min_x][max_y])
+	//	return false;
 
 	// brute force check through the car
 

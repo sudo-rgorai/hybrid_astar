@@ -5,6 +5,7 @@
 #define PI 3.14159
 #define WT 1.1
 
+
 bool operator<(const State& a, const State& b)
 {
 	return (a.g + a.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)a.x*2,(int)a.y*2))/255)*/)> (b.g + b.h  /*10.0-10.0*(1.0*finaluse.at<uchar>((int)b.x*2,(int)b.y*2))/255)*/);
