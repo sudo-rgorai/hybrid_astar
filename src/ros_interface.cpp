@@ -428,13 +428,6 @@ void plan_repeatedly(ros::NodeHandle nh)
     clock_t start_time=clock();
     while(ros::ok())
     {
-        ros::param::get("/costmap_node/costmap/width", map_x);
-        ros::param::get("/costmap_node/costmap/height", map_y);
-        ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
-    
-
-    
-        ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
         astar.map_x=map_x;
         astar.map_y=map_y;
         astar.map_grid_resolution=map_grid_resolution;

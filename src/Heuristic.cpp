@@ -230,7 +230,7 @@ vector<State> Heuristic::DubinShot(State begin, State end, double radius)
         cout<<"Length_2 :"<<Path.length_[2]<<endl;
     }
 
-    int stride = 1,d=2;
+    float stride = 1,d=1;
     State E1,E2,next;
 
     if(DEBUG)

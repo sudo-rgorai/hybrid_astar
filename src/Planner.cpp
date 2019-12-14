@@ -3,7 +3,6 @@
 #include "ros/ros.h"
 
 #define PI 3.14159
-/*#define WT 1.1*/
 
 bool operator<(const State& a, const State& b)
 {
@@ -49,10 +48,10 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int b=0;
 	int a = 3/b;*/
 	//finaluse = final;
-	int dist_dubin_shot;
-	float WT;
-	 ros::param::get("/hybrid_astar_node/dist_dubin_shot", dist_dubin_shot);
-	 ros::param::get("/hybrid_astar_node/WT", WT);
+	float dist_dubin_shot=4;
+	float WT=1.1;
+	 //ros::param::get("/hybrid_astar_node/dist_dubin_shot", dist_dubin_shot);
+	 //ros::param::get("/hybrid_astar_node/WT", WT);
 
 
 	bool DISPLAY_PATH = false;
@@ -87,7 +86,6 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 	int count=0;
 	while(!pq.empty())
 	{
-		//cout << pq.size() << endl;
 		State current=pq.top();
 		pq.pop();
 
@@ -102,8 +100,6 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 		visited[current_grid_x][current_grid_y][current_grid_theta] = true;
 		visited_state[current_grid_x][current_grid_y][current_grid_theta] = current;	
-		//cout << "Current node :" << current.x << " " <<current.y << " " << current.theta <<endl;
-		// Checks if it has reached the goal
 		if(map.isReached(current))
 		{	
 			State temp=current;
@@ -212,7 +208,7 @@ vector<State> Planner::plan(State start, State end, Vehicle car, int** obstacles
 
 				// This is to insure that consecutive points are not very close .Because of being very close 
 				// consecutive points were assigned same parents and caused problems while storing path.
-				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 2 )
+				if( sqrt(pow(nextS.x-prev.x,2) + pow(nextS.y-prev.y,2)) < 1 )
 					continue;
 
 				if( !map.checkCollision(nextS)&&!map.check_min_obs_dis(nextS,obs_dist_global,dist_dubin_shot)) //change

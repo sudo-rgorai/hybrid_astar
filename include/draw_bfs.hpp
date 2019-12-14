@@ -31,7 +31,6 @@ Mat find_obstacle_dist(Mat input_obstacle_map)    //Used to find min distance fr
 	i=current_node1.x;
 	j=current_node1.y;
 	int l,m;
-	cout<<"before while loop"<<endl;
 	while(!main_q.empty())
 	{
 			if(!main_q.empty())	
