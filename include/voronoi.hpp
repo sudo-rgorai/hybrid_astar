@@ -32,9 +32,7 @@ Mat calculate_voronoi_values(Mat obs_dist,Mat voronoi_dist){
 
 		}
 	}
-	/*for(int i=0;i<outpu.rows;i++) for(int j=0;j<outpu.cols;j++) outpu.at<uchar>(i,j) = 254;
-	for(int i=0*outpu.rows;i<0.5*outpu.rows;i++) for(int j=0*outpu.cols;j<0.5*outpu.cols;j++) outpu.at<uchar>(i,j) =0 ;
-	*/
+
 	return outpu;
 }
 
@@ -46,7 +44,6 @@ void voronoi(Mat input)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	Mat input_border(input.rows,input.cols,CV_8UC1,Scalar(0));
 	int i,j;
-	//cout <<"dghftht" <<endl;
 	//To binarise the image
 	for(i=0;i<input.rows;i++)
 	{
@@ -92,6 +89,7 @@ void voronoi(Mat input)
 			}
 		}
 	}
+	cout << "Yha pe aya" <<endl; 
 	//cout << 3 <<endl;
 	bool flag1=true;
 	for(i=0;i<input.rows;i++)
@@ -106,30 +104,29 @@ void voronoi(Mat input)
 	{
 		final=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
 		obs_dist_global=Mat(input.rows,input.cols,CV_8UC1,Scalar(255));
-	//	cout<<"sdjbksd"<<endl;
 		return;
 	}
 	Mat output_colored;
 	Mat pushed;
 	common = Mat(input.rows,input.cols,CV_8UC1,Scalar(0));
+	obstacles_numbered = Mat(input.rows,input.cols,CV_8UC3,Scalar(0,0,0));
 	main_bfs(input_border);
-	//cout << "fd"<<endl;
-
+	
+	cout << "Function ke andar gya" <<endl;
+	namedWindow("Output focused on closer obstacles",WINDOW_NORMAL);
+	number_obstacles(input);
+	cout << "Function ke bahar gya" <<endl;
+	
 	Mat output_regions(input.rows,input.cols,CV_8UC1,Scalar(0));
-	imshow("common",common);
 	output_regions=find_obstacle_dist(input);
-	//cout << "wtf 1" <<endl;
-
 	find_edge_cost(voronoi_edges);
-	//cout << "wtf 2" <<endl;
 	obs_dist_global=cost_image.clone();
 	namedWindow("Final",WINDOW_NORMAL);  //To show the results 
-
 //Comment these lines if you don't want the intermediate steps to be printed
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	/*imshow("Input",input);
 	imshow("Input with Borders",input_border);
-	imshow("Output",output_regions);
+	
 	imshow("obstacle_cost_image",obs_dist_global);
 	//for(int i=0;i<input.rows;i++) for(int j=0;j<input.cols;j++) voronoi_cost_image.at<uchar>(i,j) = 255; 
 	imshow("voronoi_cost_image",voronoi_cost_image);
