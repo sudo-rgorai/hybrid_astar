@@ -1,7 +1,8 @@
-#include"../include/params.hpp"
+#include "../include/params.hpp"
 #include "../include/Planner.hpp"
 #include "../include/GUI.hpp"
 #include "../include/voronoi.hpp"
+#include "../include/Map.hpp"
 
 #include <dynamic_reconfigure/server.h>
 #include <hybrid_astar/params_hybrid_astarConfig.h>
@@ -10,9 +11,9 @@
 #include "geometry_msgs/Pose.h" 
 #include "geometry_msgs/PoseStamped.h" 
 #include "geometry_msgs/TransformStamped.h" 
-#include"opencv2/highgui/highgui.hpp"
-#include"opencv2/core/core.hpp"
-#include"opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <tf2/LinearMath/Quaternion.h>
 #include "tf2_ros/transform_listener.h"
@@ -26,6 +27,7 @@
 #include "nav_msgs/Path.h"
 #include "nav_msgs/Odometry.h"
 
+#define dist_replan 2
 
 
 typedef struct _Quaternion
@@ -37,14 +39,13 @@ typedef struct _Quaternion
 }Quaternion;
 
 Mat costmap;
-
 class ROSInterface
 {
     public:
     int distThreshold = 5;
 
     State curr;
-	State start;
+    State start;
     State destination;
     
     int** map;
@@ -67,6 +68,7 @@ class ROSInterface
     ros::Subscriber destination_sub;
     ros::Subscriber map_sub;
     ros::Publisher path_pub;
+    ros::Publisher path_pub_dash;
 
     void repeatedDestination(const nav_msgs::Odometry::ConstPtr& odom_msg)
     {
@@ -273,6 +275,12 @@ class ROSInterface
         return;
     }
 
+    void publish_path_dash(nav_msgs::Path path_msg)
+    {
+        path_msg.header.stamp = ros::Time::now();
+        path_pub_dash.publish(path_msg);
+        return;
+    }
     ROSInterface(ros::NodeHandle nh) : listener(tfBuffer)
     {
         this->nh = nh;
@@ -283,6 +291,7 @@ class ROSInterface
         destination_sub = nh.subscribe("/move_base_simple/goal", 1, &ROSInterface::destinationCallback, this);
         map_sub = nh.subscribe("/costmap_node/costmap/costmap", 1, &ROSInterface::mapCallback, this);
         path_pub = nh.advertise<nav_msgs::Path>("/astroid_path", 10);
+        path_pub_dash = nh.advertise<nav_msgs::Path>("/astroid_path_dash", 10);
 
         int map_x,map_y;
         ros::param::get("/costmap_node/costmap/width", map_x);
@@ -319,7 +328,8 @@ void plan_once(ros::NodeHandle nh)
     interface.got_start = false;
     interface.got_destination = false;
     interface.got_map = false;
-
+    float map_origin_x = interface.map_origin_x;
+    float map_origin_y = interface.map_origin_y;
     ros::Rate wait_rate(20);
     while(ros::ok())
     {
@@ -394,6 +404,11 @@ void plan_repeatedly(ros::NodeHandle nh)
     interface.got_start = true;
     interface.got_destination = false;
     interface.got_map = true;
+    float map_origin_x = interface.map_origin_x;
+    float map_origin_y = interface.map_origin_y;
+    vector<State> check_path;
+    float prev_map_origin_x=0;
+    float prev_map_origin_y=0;
 
     cout<<"Waiting for destination"<<endl;
     ros::Rate rate(10);
@@ -415,7 +430,7 @@ void plan_repeatedly(ros::NodeHandle nh)
     ros::param::get("/costmap_node/costmap/height", map_y);
     ros::param::get("/costmap_node/costmap/resolution", map_grid_resolution);
     
-
+    check_path.clear();
     
     ros::param::get("/hybrid_astar_node/planner_grid_resolution",planner_grid_resolution);
 
@@ -426,6 +441,7 @@ void plan_repeatedly(ros::NodeHandle nh)
     
     ros::Rate wait_rate(10);
     clock_t start_time=clock();
+
     while(ros::ok())
     {
         ros::param::get("/costmap_node/costmap/width", map_x);
@@ -458,8 +474,10 @@ void plan_repeatedly(ros::NodeHandle nh)
             wait_rate.sleep();
         }
        /* clock_t end_time=clock();
-
+        
         cout<<"Total time taken: "<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;*/
+        map_origin_x = interface.map_origin_x;
+        map_origin_y = interface.map_origin_y;
         interface.transform_start_and_destination();
 
         State start = interface.start;
@@ -467,18 +485,55 @@ void plan_repeatedly(ros::NodeHandle nh)
         
         // map for every iteration retrived and used to plot obstacles on visualizer
         int** map = interface.map;
-
-        // Planning path
-       // cout<<final.at<uchar>(50,50)<<"  eee"<<endl;
-        vector<State> path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
+        Map map_dash(map, map_x, map_y, map_grid_resolution, destination, car);
+        int flag = 0;
+        vector<State> vis;
+        int min_dist = 1000;int mini = 0;
+        for(int i = 0;i<check_path.size();i++){
+            cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
+            State temp;
+            temp.x = check_path[i].x - map_origin_x + prev_map_origin_x;
+            temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
+            if(sqrt((temp.x-start.x)*(temp.x-start.x) + (temp.y-start.y)*(temp.y-start.y))<min_dist){
+                min_dist = sqrt((temp.x-start.x)*(temp.x-start.x) + (temp.y-start.y)*(temp.y-start.y));
+                mini = i;
+            }
+        }
+        for(int i = mini;i<check_path.size();i++){
+            cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
+            State temp;
+            temp.x = check_path[i].x - map_origin_x + prev_map_origin_x;
+            temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
+            temp.theta = check_path[i].theta;
+            vis.push_back(temp);
+            if(map_dash.checkCollision(temp)||map_dash.check_min_obs_dis(temp,obs_dist_global,dist_replan)) flag=1;
+        }
+        nav_msgs::Path path_msg_dash = interface.convert_to_path_msg(vis);
+        path_msg_dash.header.stamp = ros::Time::now();
+        interface.publish_path_dash(path_msg_dash);
+        if(check_path.empty()) flag=1;
+        vector<State> path;
+        if(flag) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
+        else{
+            //cout << "\n\n\n\n\n\n\n\n\nKaam ho gya.............\n\n\n\n\n\n\n\n\n\n\n" <<endl;
+            for(int i = 0;i<vis.size();i++){
+                path.push_back(vis[i]);
+            }
+        }
         if(path.empty())
-        {display.clear();
-        astar.path.clear();
-        //path_expanded.clear();
-        interface.transform_back_destination();
+        {
+            display.clear();
+            astar.path.clear();
+            //path_expanded.clear();
+            interface.transform_back_destination();
             continue;
         }
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
+        prev_map_origin_x = map_origin_x;
+        prev_map_origin_y = map_origin_y;
+        check_path.clear();
+        for (int i=0; i<path.size(); i++) 
+            check_path.push_back(path[i]); 
         vector<State> path_expanded(2*path.size()-1);
         for (int i = 0; i < path.size(); ++i)
         {
@@ -490,11 +545,11 @@ void plan_repeatedly(ros::NodeHandle nh)
 
         cout<<"Total time taken: "<<(double)(curr_time-start_time)/CLOCKS_PER_SEC<<endl;
         nav_msgs::Path path_msg = interface.convert_to_path_msg(path_expanded);
-        if((double)(curr_time-start_time)/CLOCKS_PER_SEC>0.9)
+        //if((double)(curr_time-start_time)/CLOCKS_PER_SEC>0.9)
         {
-        cout<<".................Published........................."<<endl;
-        interface.publish_path(path_msg);
-        start_time=clock();
+            cout<<".................Published........................."<<endl;
+            interface.publish_path(path_msg);
+            start_time=clock();
         }
         display.clear();
         astar.path.clear();
