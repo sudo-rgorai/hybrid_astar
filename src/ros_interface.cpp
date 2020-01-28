@@ -118,8 +118,6 @@ class ROSInterface
 
     void destinationCallback(const geometry_msgs::PoseStamped& goal_msg)
     {
-        if(got_destination)
-            return;
 
         cout<<"Getting destination"<<endl;
         
