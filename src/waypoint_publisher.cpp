@@ -63,7 +63,7 @@ int main(int argc, char **argv)
    waypoint_bot.header.stamp = ros::Time::now();
    Publisher waypoint_publisher = nh.advertise<geometry_msgs::PoseStamped>("/hybrid_astar_goal",1);
       
-	ros::Rate wait_rate(10);
+	ros::Rate wait_rate(1);
 
 
 			fscanf(ptr,"%f%f%f",&x,&y,&theta);
@@ -78,6 +78,10 @@ int main(int argc, char **argv)
 			waypoint_bot.pose.orientation.z = frame_qt.z();
 			waypoint_bot.pose.orientation.w = frame_qt.w();
 			waypoint_publisher.publish(waypoint_bot);
+      
+      cout<<"Publishedddddddddddd"<<endl;
+     
+
 			
    while(!feof(ptr))
    {
@@ -94,13 +98,14 @@ int main(int argc, char **argv)
 			waypoint_bot.pose.orientation.y = frame_qt.y();
 			waypoint_bot.pose.orientation.z = frame_qt.z();
 			waypoint_bot.pose.orientation.w = frame_qt.w();
+      flag = false;
 
    		}
-   		cout<<sqrt((curr_x-x)*(curr_x-x)+(curr_y-y)*(curr_y-y))<<endl;
+   		cout<<sqrt((curr_x-x)*(curr_x-x)+(curr_y-y)*(curr_y-y))<<"  "<<x<<" "<<y<<endl;
    		if(sqrt((curr_x-x)*(curr_x-x)+(curr_y-y)*(curr_y-y))<3)
    		{
    			waypoint_publisher.publish(waypoint_bot);
-   			flag=false;
+   			flag=true;
    		}
    		waypoint_publisher.publish(waypoint_bot);
    		ros::spinOnce();

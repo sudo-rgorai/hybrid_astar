@@ -114,7 +114,7 @@ void voronoi(Mat input)
 	
 	cout << "Function ke andar gya" <<endl;
 	namedWindow("Output focused on closer obstacles",WINDOW_NORMAL);
-	number_obstacles(input);
+	//number_obstacles(input);
 	cout << "Function ke bahar gya" <<endl;
 	
 	Mat output_regions(input.rows,input.cols,CV_8UC1,Scalar(0));

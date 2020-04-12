@@ -88,7 +88,7 @@ void bfs(Mat obstacle_map,Mat occupancy_grid,int i,int j,int count)   //Used to 
 	
 }
 
-Point bfs2(Mat obstacle_map,Mat occupancy_grid,Mat obstacles_numbered,int i,int j,int count)   //Used to apply bfs to travers whole of the obstacle edge
+/*Point bfs2(Mat obstacle_map,Mat occupancy_grid,Mat obstacles_numbered,int i,int j,int count)   //Used to apply bfs to travers whole of the obstacle edge
 {	
 	node1 temp;
 	int l,m;
@@ -284,7 +284,7 @@ void number_obstacles(Mat input_obstacle_map)     //Used to identify individual 
 	cout << "chala gya be" <<endl;
 	return;	
 }
-
+*/
 
 int isvalid(Mat obstacle_map,int x, int y)
 {

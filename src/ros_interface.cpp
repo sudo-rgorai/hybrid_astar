@@ -37,7 +37,7 @@ typedef struct _Quaternion
     float z;
     float w;
 }Quaternion;
-
+  int flag2 = 0, is_new_waypoint=0;
 Mat costmap;
 class ROSInterface
 {
@@ -143,6 +143,7 @@ class ROSInterface
         destination.theta=fmod(yaw+2*M_PI,2*M_PI);
 
         got_destination = true;
+        is_new_waypoint=1;
         return;
     }
 
@@ -286,7 +287,7 @@ class ROSInterface
 
         curr_sub = nh.subscribe("/base_pose_ground_truth", 1, &ROSInterface::repeatedDestination, this);
         start_sub = nh.subscribe("/base_pose_ground_truth", 1, &ROSInterface::startCallback, this);
-        destination_sub = nh.subscribe("/move_base_simple/goal", 1, &ROSInterface::destinationCallback, this);
+        destination_sub = nh.subscribe("/hybrid_astar_goal", 1, &ROSInterface::destinationCallback, this);
         map_sub = nh.subscribe("/costmap_node/costmap/costmap", 1, &ROSInterface::mapCallback, this);
         path_pub = nh.advertise<nav_msgs::Path>("/astroid_path", 10);
         path_pub_dash = nh.advertise<nav_msgs::Path>("/astroid_path_dash", 10);
@@ -484,11 +485,12 @@ void plan_repeatedly(ros::NodeHandle nh)
         // map for every iteration retrived and used to plot obstacles on visualizer
         int** map = interface.map;
         Map map_dash(map, map_x, map_y, map_grid_resolution, destination, car);
-        int flag = 0;
+      
         vector<State> vis;
         int min_dist = 1000;int mini = 0;
+        flag2=0; 
         for(int i = 0;i<check_path.size();i++){
-            cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
+            //cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
             State temp;
             temp.x = check_path[i].x - map_origin_x + prev_map_origin_x;
             temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
@@ -498,20 +500,20 @@ void plan_repeatedly(ros::NodeHandle nh)
             }
         }
         for(int i = mini;i<check_path.size();i++){
-            cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
+            //cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
             State temp;
             temp.x = check_path[i].x - map_origin_x + prev_map_origin_x;
             temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
             temp.theta = check_path[i].theta;
             vis.push_back(temp);
-            if(map_dash.checkCollision(temp)||map_dash.check_min_obs_dis(temp,obs_dist_global,dist_replan)) flag=1;
+            if(map_dash.checkCollision(temp)||map_dash.check_min_obs_dis(temp,obs_dist_global,dist_replan)) {flag2=1;}
         }
         nav_msgs::Path path_msg_dash = interface.convert_to_path_msg(vis);
         path_msg_dash.header.stamp = ros::Time::now();
         interface.publish_path_dash(path_msg_dash);
-        if(check_path.empty()) flag=1;
+        if(check_path.empty()){ flag2=1; cout<<"Path empty"<<endl;}
         vector<State> path;
-        if(flag) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
+        if(flag2||is_new_waypoint) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
         else{
             //cout << "\n\n\n\n\n\n\n\n\nKaam ho gya.............\n\n\n\n\n\n\n\n\n\n\n" <<endl;
             for(int i = 0;i<vis.size();i++){
@@ -546,6 +548,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         //if((double)(curr_time-start_time)/CLOCKS_PER_SEC>0.9)
         {
             cout<<".................Published........................."<<endl;
+            is_new_waypoint = 0;
             interface.publish_path(path_msg);
             start_time=clock();
         }
