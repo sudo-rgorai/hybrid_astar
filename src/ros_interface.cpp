@@ -405,7 +405,8 @@ void plan_repeatedly(ros::NodeHandle nh)
     interface.got_map = true;
     float map_origin_x = interface.map_origin_x;
     float map_origin_y = interface.map_origin_y;
-    vector<State> check_path;
+    //To assist continuing the previous path if it is followed correctly
+    vector<State> check_path; 
     float prev_map_origin_x=0;
     float prev_map_origin_y=0;
 
@@ -472,7 +473,7 @@ void plan_repeatedly(ros::NodeHandle nh)
 
             wait_rate.sleep();
         }
-       /* clock_t end_time=clock();
+        /* clock_t end_time=clock();
         
         cout<<"Total time taken: "<<(double)(end_time-start_time)/CLOCKS_PER_SEC<<endl;*/
         map_origin_x = interface.map_origin_x;
@@ -484,15 +485,16 @@ void plan_repeatedly(ros::NodeHandle nh)
         
         // map for every iteration retrived and used to plot obstacles on visualizer
         int** map = interface.map;
-        Map map_dash(map, map_x, map_y, map_grid_resolution, destination, car);
-      
-        vector<State> vis;
-        int min_dist = 1000;int mini = 0;
+
+        //To transform the previous planned path onto a new co-ordinate frame
+        Map map_dash(map, map_x, map_y, map_grid_resolution, destination, car); 
+        
+        vector<State> vis; //For visualising the transformed path 
+        int min_dist = 1000; int mini = 0;
         flag2=0; 
-        for(int i = 0;i<check_path.size();i++){
-            //cout << - map_origin_x + prev_map_origin_x << "  " << - map_origin_y + prev_map_origin_y <<endl;
+        for(int i = 0;i<check_path.size();i++){ //Check for all the points on the check path on a new coordinate frame if they are colliding with any obstacle
             State temp;
-            temp.x = check_path[i].x - map_origin_x + prev_map_origin_x;
+            temp.x = check_path[i].x - map_origin_x + prev_map_origin_x; //Transformed co-ordinates
             temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
             if(sqrt((temp.x-start.x)*(temp.x-start.x) + (temp.y-start.y)*(temp.y-start.y))<min_dist){
                 min_dist = sqrt((temp.x-start.x)*(temp.x-start.x) + (temp.y-start.y)*(temp.y-start.y));
@@ -506,16 +508,15 @@ void plan_repeatedly(ros::NodeHandle nh)
             temp.y = check_path[i].y - map_origin_y + prev_map_origin_y;
             temp.theta = check_path[i].theta;
             vis.push_back(temp);
-            if(map_dash.checkCollision(temp)||map_dash.check_min_obs_dis(temp,obs_dist_global,dist_replan)) {flag2=1;}
+            if(map_dash.checkCollision(temp)||map_dash.check_min_obs_dis(temp,obs_dist_global,dist_replan)) {flag2=1;} //If the previous transformed path collides with any of the obstacle, plan a new path
         }
-        nav_msgs::Path path_msg_dash = interface.convert_to_path_msg(vis);
+        nav_msgs::Path path_msg_dash = interface.convert_to_path_msg(vis); //To convert to the required message format
         path_msg_dash.header.stamp = ros::Time::now();
         interface.publish_path_dash(path_msg_dash);
-        if(check_path.empty()){ flag2=1; cout<<"Path empty"<<endl;}
+        if(check_path.empty()){ flag2=1; cout<<"Path empty"<<endl;} //For the first time check_path is empty, so plan a path for the first time
         vector<State> path;
         if(flag2||is_new_waypoint) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
         else{
-            //cout << "\n\n\n\n\n\n\n\n\nKaam ho gya.............\n\n\n\n\n\n\n\n\n\n\n" <<endl;
             for(int i = 0;i<vis.size();i++){
                 path.push_back(vis[i]);
             }
@@ -524,7 +525,6 @@ void plan_repeatedly(ros::NodeHandle nh)
         {
             display.clear();
             astar.path.clear();
-            //path_expanded.clear();
             interface.transform_back_destination();
             continue;
         }
@@ -533,7 +533,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         prev_map_origin_y = map_origin_y;
         check_path.clear();
         for (int i=0; i<path.size(); i++) 
-            check_path.push_back(path[i]); 
+            check_path.push_back(path[i]);  
         vector<State> path_expanded(2*path.size()-1);
         for (int i = 0; i < path.size(); ++i)
         {
