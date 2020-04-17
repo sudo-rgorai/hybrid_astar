@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     
 	ros::Subscriber odom_call_sub = nh.subscribe("/base_pose_ground_truth", 1, &odom_call_back);
    FILE *ptr;
-   ptr = fopen("wp.txt","r");
+   ptr = fopen("src/hybrid_astar/waypoints.txt","r");
 
    int i,j;
    float x,y,theta;
