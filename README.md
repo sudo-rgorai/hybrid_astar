@@ -40,7 +40,7 @@ This is `ros`-integrated package for Hybrid A* Path Planner.The underlying metho
 `roslaunch car_demo demo.launch`
 
 **Launching costmap_2d package**<br/>
-`roslaunch costmap_2d gazebo.launch`
+`roslaunch hybrid_astar gazebo.launch`
 
 **Launching hybrid astar planner**<br/>
 `rosrun hybrid_astar hybridAstar_node`
@@ -85,6 +85,14 @@ Rviz Simulation<br/>
 #### Video for Gazebo simulation
 
 [Video](https://www.youtube.com/watch?v=vPbcxREJunU)
+
+#### Gazebo simulation with waypoints
+
+To run our simulation as in the video given below, download the gazebo world file from https://drive.google.com/open?id=1uOzbxsuGYz6_36hEiQ5Fh5yBMukjkw87. 
+Then configure car_demo to set your downloaded world file directory and spawn the prius model at (-19,14). 
+Waypoints are present in waypoints.txt file for a sample path, change them according to your path.
+To automatically publish waypoints from waypoints.txt file, run :- <br/>
+'rosrun hybrid_astar waypoint_node'
 
 #### Resources
 [Practical Search Techniques in Path Planning for Autonomous Driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
