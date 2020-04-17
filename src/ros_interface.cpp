@@ -28,7 +28,7 @@
 #include "nav_msgs/Odometry.h"
 
 #define dist_replan 2
-
+#define DONT_REPLAN_WHEN_NOT_NECESSARY true   //Change this to disable replan when it is followable and doesnt collide through obstacles
 
 typedef struct _Quaternion
 {
@@ -113,6 +113,7 @@ class ROSInterface
 
         start.theta = fmod(yaw+2*M_PI,2*M_PI);
         got_start = true;
+        cout <<"Return to ho gaya" <<endl;
         return;
     }
 
@@ -515,7 +516,7 @@ void plan_repeatedly(ros::NodeHandle nh)
         interface.publish_path_dash(path_msg_dash);
         if(check_path.empty()){ flag2=1; cout<<"Path empty"<<endl;} //For the first time check_path is empty, so plan a path for the first time
         vector<State> path;
-        if(flag2||is_new_waypoint) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
+        if(!DONT_REPLAN_WHEN_NOT_NECESSARY||flag2||is_new_waypoint) path = astar.plan(start, destination, car, map, display,final,obs_dist_global);
         else{
             for(int i = 0;i<vis.size();i++){
                 path.push_back(vis[i]);
@@ -528,6 +529,7 @@ void plan_repeatedly(ros::NodeHandle nh)
             interface.transform_back_destination();
             continue;
         }
+        cout << "Yahe pe to aya hai" <<endl;
         // This has been done to increase the density of number of points on the path so that it can be tracked efficiently
         prev_map_origin_x = map_origin_x;
         prev_map_origin_y = map_origin_y;
