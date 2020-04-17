@@ -88,11 +88,11 @@ Rviz Simulation<br/>
 
 #### Gazebo simulation with waypoints
 
-To run our simulation as in the video given below, download the gazebo world file from https://drive.google.com/open?id=1uOzbxsuGYz6_36hEiQ5Fh5yBMukjkw87. 
-Then configure car_demo to set your downloaded world file directory and spawn the prius model at (-19,14). 
-Waypoints are present in waypoints.txt file for a sample path, change them according to your path.
+To run our simulation as in the video given below, download the gazebo world file from https://drive.google.com/open?id=1uOzbxsuGYz6_36hEiQ5Fh5yBMukjkw87. <br/>
+Then configure car_demo to set your downloaded world file directory and spawn the prius model at (-19,14).<br/> 
+Waypoints are present in waypoints.txt file for a sample path, change them according to your path.<br/>
 To automatically publish waypoints from waypoints.txt file, run :- <br/>
-'rosrun hybrid_astar waypoint_node'
+`rosrun hybrid_astar waypoint_node` <br/>
 
 #### Resources
 [Practical Search Techniques in Path Planning for Autonomous Driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
