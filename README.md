@@ -94,6 +94,8 @@ Waypoints are present in waypoints.txt file for a sample path, change them accor
 To automatically publish waypoints from waypoints.txt file, run :- <br/>
 `rosrun hybrid_astar waypoint_node` <br/>
 
+[Video](https://drive.google.com/open?id=1kgt7fUzq9Xiw5EEF6VgifQybaC_EXb2d) <br/>
+
 #### Resources
 [Practical Search Techniques in Path Planning for Autonomous Driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
 
