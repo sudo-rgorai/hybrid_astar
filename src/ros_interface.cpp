@@ -572,6 +572,7 @@ int main(int argc,char **argv)
     ros::NodeHandle nh;
     //obs_dist_global=Mat(200,200,CV_8UC1,Scalar(255));
     //Mat inp=imread("unnamed.jpg",0);
+ 
     plan_repeatedly(nh);
     
     return 0;
